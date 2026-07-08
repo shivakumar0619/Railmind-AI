@@ -1,6 +1,9 @@
 {
   "simulation_speed_multiplier": 60,
   "tick_rate_ms": 1000,
-  "random_delay_chance": 0.05,
-  "signal_degradation_chance": 0.02
+  "min_headway_blocks": 1,
+  "station_dwell_ticks": 2,
+  "delay_increment_minutes": 1,
+  "random_delay_chance": 0,
+  "signal_degradation_chance": 0
 }

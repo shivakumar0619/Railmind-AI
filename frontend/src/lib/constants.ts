@@ -4,6 +4,7 @@
 export const NAV_ITEMS = [
   { label: "Dashboard", path: "/", icon: "LayoutDashboard" },
   { label: "Digital Twin", path: "/digital-twin", icon: "Map" },
+  { label: "Route Planner", path: "/route-planner", icon: "MapPin" },
   { label: "Trains", path: "/trains", icon: "Train" },
   { label: "Stations", path: "/stations", icon: "Building2" },
   { label: "Signals", path: "/signals", icon: "CircleDot" },

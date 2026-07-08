@@ -57,15 +57,28 @@ def get_analytics():
 
 @router.get("/system-status")
 def get_system_status():
+    runtime = simulation_engine.state.get("runtime", {})
     return {
         "data": {
-            "data": [
-                {"name": "API Gateway", "status": "operational", "uptime": "99.99%"},
-                {"name": "Database", "status": "operational", "uptime": "99.95%"},
-                {"name": "Simulation Engine", "status": "operational", "uptime": "100%"},
+            "components": [
+                {"name": "Backend API", "status": runtime.get("backend_status", "operational"), "uptime": "99.99%"},
+                {"name": "Database", "status": runtime.get("database_status", "json-simulation"), "uptime": "simulation"},
+                {"name": "Simulation Engine", "status": runtime.get("simulation_status", "standby"), "uptime": "active"},
+                {"name": "Map Telemetry", "status": "operational", "uptime": "99.97%"},
+                {"name": "Alert Processor", "status": "operational", "uptime": "99.94%"},
             ],
             "overall": "operational",
-            "timestamp": "2026-07-07T00:00:00Z"
+            "backend_status": runtime.get("backend_status", "operational"),
+            "database_status": runtime.get("database_status", "json-simulation"),
+            "simulation_status": runtime.get("simulation_status", "standby"),
+            "api_latency_ms": runtime.get("api_latency_ms", 24),
+            "memory_usage_mb": runtime.get("memory_usage_mb", 186),
+            "cpu_usage_percent": runtime.get("cpu_usage_percent", 18),
+            "running_trains": runtime.get("running_trains", 0),
+            "running_signals": runtime.get("running_signals", 0),
+            "simulation_tick": runtime.get("simulation_tick", 0),
+            "docker_status": runtime.get("docker_status", "not_checked"),
+            "timestamp": runtime.get("timestamp"),
         },
         "errors": None
     }

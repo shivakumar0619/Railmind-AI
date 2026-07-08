@@ -1,58 +1,200 @@
 [
   {
-    "id": "rt_sc_bg",
+    "id": "rt_lpi_bmt",
+    "code": "LPI-BMT",
+    "source_code": "LPI",
+    "target_code": "BMT",
+    "distance_km": 17.3,
+    "max_speed_kmh": 110,
+    "block_count": 3,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_bmt_sc",
+    "code": "BMT-SC",
+    "source_code": "BMT",
+    "target_code": "SC",
+    "distance_km": 4.9,
+    "max_speed_kmh": 110,
+    "block_count": 2,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_hyb_sc",
+    "code": "HYB-SC",
+    "source_code": "HYB",
+    "target_code": "SC",
+    "distance_km": 5.9,
+    "max_speed_kmh": 110,
+    "block_count": 2,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_sc_kzj",
+    "code": "SC-KZJ",
     "source_code": "SC",
-    "target_code": "BG",
-    "distance_km": 46,
-    "max_speed_kmh": 130
-  },
-  {
-    "id": "rt_bg_aler",
-    "source_code": "BG",
-    "target_code": "ALER",
-    "distance_km": 23,
-    "max_speed_kmh": 130
-  },
-  {
-    "id": "rt_aler_zn",
-    "source_code": "ALER",
-    "target_code": "ZN",
-    "distance_km": 15,
-    "max_speed_kmh": 130
-  },
-  {
-    "id": "rt_zn_kzj",
-    "source_code": "ZN",
     "target_code": "KZJ",
-    "distance_km": 48,
-    "max_speed_kmh": 130
+    "distance_km": 136.8,
+    "max_speed_kmh": 130,
+    "block_count": 24,
+    "corridor": "Mainline",
+    "operational_status": "normal"
   },
   {
     "id": "rt_kzj_wl",
+    "code": "KZJ-WL",
     "source_code": "KZJ",
     "target_code": "WL",
-    "distance_km": 10,
-    "max_speed_kmh": 110
+    "distance_km": 8.3,
+    "max_speed_kmh": 130,
+    "block_count": 2,
+    "corridor": "Mainline",
+    "operational_status": "normal"
   },
   {
     "id": "rt_wl_mabd",
+    "code": "WL-MABD",
     "source_code": "WL",
     "target_code": "MABD",
-    "distance_km": 60,
-    "max_speed_kmh": 130
+    "distance_km": 66.0,
+    "max_speed_kmh": 130,
+    "block_count": 12,
+    "corridor": "Mainline",
+    "operational_status": "normal"
   },
   {
     "id": "rt_mabd_kmt",
+    "code": "MABD-KMT",
     "source_code": "MABD",
     "target_code": "KMT",
-    "distance_km": 47,
-    "max_speed_kmh": 130
+    "distance_km": 45.7,
+    "max_speed_kmh": 110,
+    "block_count": 8,
+    "corridor": "Mainline",
+    "operational_status": "normal"
   },
   {
     "id": "rt_kmt_bza",
+    "code": "KMT-BZA",
     "source_code": "KMT",
     "target_code": "BZA",
-    "distance_km": 100,
-    "max_speed_kmh": 130
+    "distance_km": 105.9,
+    "max_speed_kmh": 110,
+    "block_count": 19,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_sc_gnt",
+    "code": "SC-GNT",
+    "source_code": "SC",
+    "target_code": "GNT",
+    "distance_km": 265.9,
+    "max_speed_kmh": 130,
+    "block_count": 48,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_gnt_mag",
+    "code": "GNT-MAG",
+    "source_code": "GNT",
+    "target_code": "MAG",
+    "distance_km": 21.5,
+    "max_speed_kmh": 110,
+    "block_count": 3,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_mag_bza",
+    "code": "MAG-BZA",
+    "source_code": "MAG",
+    "target_code": "BZA",
+    "distance_km": 12.3,
+    "max_speed_kmh": 110,
+    "block_count": 2,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_gnt_tel",
+    "code": "GNT-TEL",
+    "source_code": "GNT",
+    "target_code": "TEL",
+    "distance_km": 25.4,
+    "max_speed_kmh": 110,
+    "block_count": 4,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_bza_tel",
+    "code": "BZA-TEL",
+    "source_code": "BZA",
+    "target_code": "TEL",
+    "distance_km": 34.6,
+    "max_speed_kmh": 130,
+    "block_count": 6,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_tel_ogl",
+    "code": "TEL-OGL",
+    "source_code": "TEL",
+    "target_code": "OGL",
+    "distance_km": 113.8,
+    "max_speed_kmh": 110,
+    "block_count": 20,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_ogl_nlr",
+    "code": "OGL-NLR",
+    "source_code": "OGL",
+    "target_code": "NLR",
+    "distance_km": 130.2,
+    "max_speed_kmh": 110,
+    "block_count": 23,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_nlr_gdr",
+    "code": "NLR-GDR",
+    "source_code": "NLR",
+    "target_code": "GDR",
+    "distance_km": 39.6,
+    "max_speed_kmh": 110,
+    "block_count": 7,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_gdr_ru",
+    "code": "GDR-RU",
+    "source_code": "GDR",
+    "target_code": "RU",
+    "distance_km": 73.4,
+    "max_speed_kmh": 110,
+    "block_count": 13,
+    "corridor": "Mainline",
+    "operational_status": "normal"
+  },
+  {
+    "id": "rt_ru_tpty",
+    "code": "RU-TPTY",
+    "source_code": "RU",
+    "target_code": "TPTY",
+    "distance_km": 12.3,
+    "max_speed_kmh": 110,
+    "block_count": 2,
+    "corridor": "Mainline",
+    "operational_status": "normal"
   }
 ]

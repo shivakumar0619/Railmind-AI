@@ -1,18 +1,54 @@
 [
   {
-    "id": "maint_1",
+    "id": "maint_sig_kzj_01",
     "type": "Signal Calibration",
+    "asset_type": "signal",
     "location": "rt_kzj_wl",
+    "station_code": "KZJ",
+    "block": "KZJ-WL-B01",
     "status": "In Progress",
-    "urgency": "Medium",
-    "due": "Today"
+    "urgency": "High",
+    "due": "Today 14:00",
+    "speed_restriction_kmh": 80,
+    "data_source": "simulation"
   },
   {
-    "id": "maint_2",
-    "type": "Track Inspection",
-    "location": "rt_sc_bg",
+    "id": "maint_trk_ogl_01",
+    "type": "Track Geometry Inspection",
+    "asset_type": "track",
+    "location": "rt_ogl_nlr",
+    "station_code": "OGL",
+    "block": "OGL-NLR-B04",
     "status": "Scheduled",
-    "urgency": "High",
-    "due": "Tomorrow"
+    "urgency": "Medium",
+    "due": "Today 22:30",
+    "speed_restriction_kmh": 90,
+    "data_source": "simulation"
+  },
+  {
+    "id": "maint_oh_rjy_01",
+    "type": "OHE Crosswind Patrol",
+    "asset_type": "overhead_equipment",
+    "location": "rt_tdd_rjy",
+    "station_code": "RJY",
+    "block": "TDD-RJY-B03",
+    "status": "Scheduled",
+    "urgency": "Medium",
+    "due": "Tomorrow 06:00",
+    "speed_restriction_kmh": 100,
+    "data_source": "simulation"
+  },
+  {
+    "id": "maint_pts_gnt_01",
+    "type": "Point Machine Inspection",
+    "asset_type": "points",
+    "location": "rt_gnt_tel",
+    "station_code": "GNT",
+    "block": "GNT-TEL-B01",
+    "status": "Pending Parts",
+    "urgency": "Critical",
+    "due": "Overdue",
+    "speed_restriction_kmh": 60,
+    "data_source": "simulation"
   }
 ]

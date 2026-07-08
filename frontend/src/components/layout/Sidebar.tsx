@@ -5,6 +5,7 @@ import { NAV_ITEMS } from "../../lib/constants";
 import {
   LayoutDashboard,
   Map,
+  MapPin,
   Train,
   Building2,
   CircleDot,
@@ -24,7 +25,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  LayoutDashboard, Map, Train, Building2, CircleDot, Route, Bell, Wrench,
+  LayoutDashboard, Map, MapPin, Train, Building2, CircleDot, Route, Bell, Wrench,
   Brain, BarChart3, FileText, Users, Settings, HelpCircle, Activity,
 };
 

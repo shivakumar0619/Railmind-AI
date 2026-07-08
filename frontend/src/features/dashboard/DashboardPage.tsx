@@ -6,13 +6,19 @@ import {
   Train,
   Gauge,
   CloudRain,
-  Map,
+  Map as MapIcon,
   Wrench,
   BrainCircuit,
   Clock,
   CheckCircle2,
+  TrendingDown,
+  TrendingUp,
+  AlertOctagon,
+  Zap
 } from "lucide-react";
 import { api } from "../../lib/api";
+import TrackMap from "../digital-twin/components/TrackMap";
+import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<any>(null);
@@ -43,143 +49,181 @@ export default function DashboardPage() {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 1000); // 1-second simulation tick
+    const interval = setInterval(fetchData, 1000);
     return () => clearInterval(interval);
   }, []);
 
   if (!stats) {
     return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Activity className="h-10 w-10 animate-pulse text-accent" />
-          <p className="font-mono text-sm uppercase tracking-widest text-text-muted">Initializing Command Centre...</p>
-        </div>
+      <div className="flex h-full items-center justify-center bg-bg-base">
+        <Activity className="h-8 w-8 animate-pulse text-accent" />
       </div>
     );
   }
 
   const activeTrains = trains.filter((t) => t.status === "running");
+  const stoppedTrains = trains.filter((t) => t.status === "stopped");
+  const delayedTrains = trains.filter((t) => t.delay_minutes > 0);
+  const cancelledTrains = trains.filter((t) => t.status === "cancelled");
+
+  // Mock data for sparklines
+  const speedData = Array.from({ length: 20 }).map((_, i) => ({ val: 60 + Math.random() * 40 }));
+  const delayData = Array.from({ length: 20 }).map((_, i) => ({ val: Math.random() * 15 }));
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">Operations Command Centre</h1>
-          <p className="mt-1 flex items-center gap-2 text-sm text-text-secondary">
-            <Map className="h-4 w-4" />
-            {stats.corridor} Sector
-          </p>
+    <div className="flex flex-col gap-2 h-[calc(100vh-6rem)] overflow-hidden font-mono text-sm bg-bg-base">
+      {/* Header bar */}
+      <div className="flex items-center justify-between border-b border-border-primary pb-2 shrink-0">
+        <div className="flex items-center gap-3">
+          <Activity className="h-5 w-5 text-accent" />
+          <h1 className="text-lg font-bold uppercase tracking-widest text-text-primary">Ops Command Centre</h1>
         </div>
-        <div className="flex items-center gap-3 rounded-lg border border-border-primary bg-bg-surface p-2 pr-4 shadow-sm">
-          <div className="relative flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-success opacity-75"></span>
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-status-success"></span>
+        <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-text-muted uppercase">Sector:</span>
+            <span className="text-text-primary font-bold">{stats.corridor}</span>
           </div>
-          <span className="font-mono text-xs font-medium uppercase tracking-wider text-text-primary">
-            Live Telemetry Active
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-text-muted uppercase">Sim Time:</span>
+            <span className="text-text-primary font-bold">{new Date().toLocaleTimeString()}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-text-muted uppercase">Status:</span>
+            <span className="bg-status-success/20 text-status-success border border-status-success/30 px-2 py-0.5 font-bold uppercase">Active</span>
+          </div>
         </div>
       </div>
 
-      {/* Top KPI Row */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KPICard
-          title="Active Trains"
-          value={stats.active_trains}
-          icon={Train}
-          status="info"
-          detail={`${activeTrains.length} on route`}
-        />
-        <KPICard
-          title="Signal Health"
-          value={`${stats.signal_health}%`}
-          icon={Signal}
-          status={stats.signal_health > 90 ? "success" : "warning"}
-          detail={`${stats.total_stations} stations active`}
-        />
-        <KPICard
-          title="On-Time Perf"
-          value={`${stats.on_time_performance}%`}
-          icon={Gauge}
-          status={stats.on_time_performance >= 90 ? "success" : "warning"}
-          detail="Network wide"
-        />
-        <KPICard
-          title="Critical Alerts"
-          value={stats.critical_alerts}
-          icon={AlertTriangle}
-          status={stats.critical_alerts > 0 ? "danger" : "success"}
-          detail={stats.critical_alerts > 0 ? "Immediate action req." : "All systems normal"}
-        />
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-        {/* Left Column (Wider) */}
-        <div className="space-y-4 lg:col-span-2 xl:col-span-3">
-          
-          {/* Live Trains Table */}
-          <div className="card h-[400px] overflow-hidden flex flex-col">
-            <div className="mb-4 flex items-center justify-between border-b border-border-primary pb-3">
-              <div className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-accent" />
-                <h2 className="text-base font-semibold text-text-primary">Live Train Telemetry</h2>
-              </div>
-              <span className="rounded-full bg-status-info-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-status-info">
-                {activeTrains.length} Tracking
-              </span>
+      <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
+        {/* Left Column - Key Metrics & Map */}
+        <div className="w-[300px] shrink-0 flex flex-col gap-2 min-h-0 overflow-y-auto pr-1">
+          {/* Train Status */}
+          <div className="bg-bg-surface border border-border-primary p-2">
+            <div className="text-xs font-bold uppercase text-text-secondary border-b border-border-primary pb-1 mb-2">Fleet Status</div>
+            <div className="grid grid-cols-2 gap-2">
+              <MetricBox label="Running" value={activeTrains.length} color="text-status-success" />
+              <MetricBox label="Stopped" value={stoppedTrains.length} color="text-status-warning" />
+              <MetricBox label="Delayed" value={delayedTrains.length} color="text-status-warning" />
+              <MetricBox label="Cancelled" value={cancelledTrains.length} color="text-status-danger" />
             </div>
-            <div className="flex-1 overflow-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="sticky top-0 bg-bg-surface-hover text-xs uppercase text-text-muted">
+          </div>
+
+          {/* Network Health */}
+          <div className="bg-bg-surface border border-border-primary p-2">
+            <div className="text-xs font-bold uppercase text-text-secondary border-b border-border-primary pb-1 mb-2">Network Health</div>
+            <div className="space-y-2">
+              <ProgressRow label="Signal Health" val={stats.signal_health} max={100} unit="%" />
+              <ProgressRow label="Occupancy" val={34} max={100} unit="%" />
+              <div className="flex justify-between items-center text-xs mt-1 pt-1 border-t border-border-primary">
+                <span className="text-text-muted">Crit Alerts</span>
+                <span className={`font-bold ${stats.critical_alerts > 0 ? 'text-status-danger' : 'text-status-success'}`}>{stats.critical_alerts}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-text-muted">Emergency</span>
+                <span className="font-bold text-status-success">0</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Performance Analytics */}
+          <div className="bg-bg-surface border border-border-primary p-2 flex-1 min-h-[150px] flex flex-col">
+            <div className="text-xs font-bold uppercase text-text-secondary border-b border-border-primary pb-1 mb-2 shrink-0">Analytics</div>
+            <div className="flex-1 flex flex-col gap-2">
+              <div className="bg-bg-base border border-border-primary p-2 rounded">
+                <div className="flex justify-between items-end mb-1">
+                  <span className="text-[10px] text-text-muted uppercase">Avg Speed</span>
+                  <span className="text-sm font-bold text-text-primary">68 km/h</span>
+                </div>
+                <div className="h-8">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={speedData}>
+                      <YAxis domain={['auto', 'auto']} hide />
+                      <Line type="monotone" dataKey="val" stroke="#3b82f6" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="bg-bg-base border border-border-primary p-2 rounded">
+                <div className="flex justify-between items-end mb-1">
+                  <span className="text-[10px] text-text-muted uppercase">Avg Delay</span>
+                  <span className="text-sm font-bold text-status-warning">4.2 min</span>
+                </div>
+                <div className="h-8">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={delayData}>
+                      <YAxis domain={['auto', 'auto']} hide />
+                      <Line type="monotone" dataKey="val" stroke="#f59e0b" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Middle Column - Telemetry & Digital Twin */}
+        <div className="flex-1 flex flex-col gap-2 min-h-0 min-w-[400px]">
+          {/* Digital Twin Mini */}
+          <div className="h-[250px] shrink-0 bg-bg-surface border border-border-primary p-1 relative overflow-hidden flex flex-col">
+            <div className="absolute top-2 left-2 z-10 bg-bg-surface/80 backdrop-blur border border-border-primary px-2 py-1 flex items-center gap-2">
+              <MapIcon className="h-3.5 w-3.5 text-accent" />
+              <span className="text-[10px] uppercase font-bold text-text-primary">Live Twin Preview</span>
+            </div>
+            <div className="flex-1 w-full h-full border border-border-primary rounded overflow-hidden">
+              <TrackMap
+                stations={Object.entries(weather?.stations || {}).map(([id, d]: [string, any]) => ({
+                  id,
+                  name: id,
+                  lat: 17.3850 + (Math.random() - 0.5) * 0.1,
+                  lng: 78.4867 + (Math.random() - 0.5) * 0.1
+                }))}
+                trains={trains}
+              />
+            </div>
+          </div>
+
+          {/* Live Train Feed */}
+          <div className="flex-1 bg-bg-surface border border-border-primary flex flex-col min-h-0">
+            <div className="p-2 border-b border-border-primary bg-bg-surface-hover flex justify-between items-center shrink-0">
+              <span className="text-xs uppercase font-bold text-text-secondary">Active Telemetry Stream</span>
+              <span className="text-[10px] text-text-muted font-mono">{activeTrains.length} TRK</span>
+            </div>
+            <div className="flex-1 overflow-auto p-0">
+              <table className="w-full text-left text-[11px]">
+                <thead className="sticky top-0 bg-bg-base text-text-muted uppercase">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Train</th>
-                    <th className="px-4 py-3 font-medium">Type</th>
-                    <th className="px-4 py-3 font-medium">Section</th>
-                    <th className="px-4 py-3 font-medium">Speed</th>
-                    <th className="px-4 py-3 font-medium">Progress</th>
-                    <th className="px-4 py-3 font-medium">Delay</th>
+                    <th className="px-2 py-1.5 font-semibold">ID/TRN</th>
+                    <th className="px-2 py-1.5 font-semibold">SEC</th>
+                    <th className="px-2 py-1.5 font-semibold">SPD</th>
+                    <th className="px-2 py-1.5 font-semibold">PRG</th>
+                    <th className="px-2 py-1.5 font-semibold">DLY</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-primary">
                   {trains.map((train) => (
-                    <tr key={train.id} className="transition-colors hover:bg-bg-surface-hover/50">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-text-primary">{train.number}</div>
-                        <div className="text-xs text-text-muted">{train.name}</div>
+                    <tr key={train.id} className="hover:bg-bg-surface-hover/50 transition-colors">
+                      <td className="px-2 py-1.5">
+                        <div className="font-bold text-text-primary">{train.number}</div>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="rounded bg-bg-base px-2 py-1 text-[10px] font-semibold uppercase text-text-secondary border border-border-primary">
-                          {train.type}
-                        </span>
+                      <td className="px-2 py-1.5 text-text-secondary truncate max-w-[80px]" title={train.current_route_id}>
+                        {train.current_route_id.replace("rt_", "").toUpperCase()}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs text-text-secondary">
-                        {train.current_route_id.replace("rt_", "").replace("_", " \u2192 ").toUpperCase()}
+                      <td className="px-2 py-1.5 text-text-primary">
+                        {Math.round(train.current_speed_kmh)}
                       </td>
-                      <td className="px-4 py-3 font-mono text-text-primary">
-                        {Math.round(train.current_speed_kmh)} km/h
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-bg-base border border-border-primary">
-                            <div
-                              className={`h-full rounded-full ${train.status === 'stopped' ? 'bg-status-warning' : 'bg-status-success'}`}
-                              style={{ width: `${train.progress_pct}%` }}
-                            />
-                          </div>
-                          <span className="font-mono text-[10px] text-text-muted">
-                            {Math.round(train.progress_pct)}%
-                          </span>
+                      <td className="px-2 py-1.5">
+                        <div className="w-12 h-1.5 bg-bg-base border border-border-primary">
+                          <div
+                            className={`h-full ${train.status === 'stopped' ? 'bg-status-warning' : 'bg-status-success'}`}
+                            style={{ width: `${Math.min(100, train.progress_pct)}%` }}
+                          />
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-2 py-1.5">
                         {train.delay_minutes > 0 ? (
-                          <span className="flex items-center gap-1 font-mono text-status-danger">
-                            <Clock className="h-3 w-3" />+{train.delay_minutes}m
-                          </span>
+                          <span className="text-status-warning font-bold">+{train.delay_minutes}</span>
                         ) : (
-                          <span className="text-status-success text-xs font-medium uppercase">On Time</span>
+                          <span className="text-status-success font-bold">0</span>
                         )}
                       </td>
                     </tr>
@@ -188,115 +232,66 @@ export default function DashboardPage() {
               </table>
             </div>
           </div>
-
-          {/* AI & Events Row */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="card h-64">
-              <div className="mb-4 flex items-center gap-2 border-b border-border-primary pb-3">
-                <BrainCircuit className="h-5 w-5 text-purple-400" />
-                <h2 className="text-base font-semibold text-text-primary">AI Operations Advisor</h2>
-              </div>
-              <div className="space-y-3 overflow-y-auto">
-                <div className="flex gap-3 rounded-md bg-purple-500/10 p-3 border border-purple-500/20">
-                  <Activity className="mt-0.5 h-4 w-4 shrink-0 text-purple-400" />
-                  <div>
-                    <p className="text-sm font-medium text-purple-200">Optimal Routing Suggested</p>
-                    <p className="mt-1 text-xs text-purple-300/70">
-                      Rerouting Train 12805 via loop line at KZJ will improve network flow by 4.2%.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3 rounded-md bg-bg-surface-hover p-3 border border-border-primary">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-status-success" />
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">Signal Network Stable</p>
-                    <p className="mt-1 text-xs text-text-muted">
-                      No predictive failures detected in the next 12 hours based on historical telemetry.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="card h-64 flex flex-col">
-              <div className="mb-4 flex items-center justify-between border-b border-border-primary pb-3">
-                <div className="flex items-center gap-2">
-                  <Wrench className="h-5 w-5 text-status-warning" />
-                  <h2 className="text-base font-semibold text-text-primary">Active Maintenance</h2>
-                </div>
-              </div>
-              <div className="flex-1 space-y-3 overflow-y-auto">
-                {maintenance.length > 0 ? maintenance.map((task) => (
-                  <div key={task.id} className="flex justify-between items-center border-l-2 border-status-warning pl-3 py-1">
-                    <div>
-                      <p className="text-sm font-medium text-text-primary">{task.type}</p>
-                      <p className="text-xs font-mono text-text-muted mt-0.5">{task.location}</p>
-                    </div>
-                    <span className="rounded bg-status-warning/10 px-2 py-1 text-[10px] uppercase font-bold text-status-warning">
-                      {task.status}
-                    </span>
-                  </div>
-                )) : (
-                  <p className="text-sm text-text-muted italic">No active maintenance.</p>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Right Column (Narrower) */}
-        <div className="space-y-4">
-          
-          {/* Weather Panel */}
-          <div className="card">
-            <div className="mb-4 flex items-center gap-2 border-b border-border-primary pb-3">
-              <CloudRain className="h-5 w-5 text-status-info" />
-              <h2 className="text-base font-semibold text-text-primary">Corridor Conditions</h2>
+        {/* Right Column - Events & Insights */}
+        <div className="w-[300px] shrink-0 flex flex-col gap-2 min-h-0 overflow-y-auto">
+          {/* Insights */}
+          <div className="bg-bg-surface border border-border-primary flex flex-col p-2 h-[120px] shrink-0">
+            <div className="flex items-center gap-2 border-b border-border-primary pb-1 mb-2 text-text-secondary">
+              <BrainCircuit className="h-3.5 w-3.5 text-purple-400" />
+              <span className="text-xs uppercase font-bold">AI Insights</span>
             </div>
-            {weather ? (
-              <div className="space-y-3">
-                <div className="rounded bg-status-info/10 p-3 text-center border border-status-info/20">
-                  <p className="text-xs uppercase tracking-widest text-status-info font-bold">Network Wide</p>
-                  <p className="mt-1 font-medium text-text-primary">{weather.global_status}</p>
-                </div>
-                <div className="space-y-2 pt-2">
-                  {Object.entries(weather.stations).map(([code, data]: [string, any]) => (
-                    <div key={code} className="flex items-center justify-between">
-                      <span className="font-mono text-xs text-text-secondary">{code}</span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-text-muted">{data.condition}</span>
-                        <span className="font-mono text-sm font-medium text-text-primary">{data.temp_c}°C</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <div className="overflow-auto flex-1 space-y-2">
+              <div className="text-[10px] bg-purple-500/10 border border-purple-500/20 p-1.5 rounded">
+                <span className="font-bold text-purple-300">Rerouting Option:</span> Route {trains[0]?.number || '12805'} via loop line to improve flow by 4.2%.
               </div>
-            ) : (
-              <p className="text-xs text-text-muted">Loading weather data...</p>
-            )}
+              <div className="text-[10px] bg-status-success/10 border border-status-success/20 p-1.5 rounded">
+                <span className="font-bold text-status-success">Clear:</span> No predictive failures in next 12h.
+              </div>
+            </div>
           </div>
 
-          {/* Critical Alerts Feed */}
-          <div className="card flex-1 min-h-[300px]">
-            <div className="mb-4 flex items-center justify-between border-b border-border-primary pb-3">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-status-danger" />
-                <h2 className="text-base font-semibold text-text-primary">System Alerts</h2>
-              </div>
+          {/* Incidents / Alerts */}
+          <div className="bg-bg-surface border border-border-primary flex flex-col flex-1 min-h-[150px]">
+            <div className="p-2 border-b border-border-primary flex items-center gap-2 text-text-secondary">
+              <AlertOctagon className="h-3.5 w-3.5 text-status-danger" />
+              <span className="text-xs uppercase font-bold">System Events</span>
             </div>
-            <div className="space-y-3">
-              {alerts.length > 0 ? (
-                alerts.map((alert) => (
-                  <div key={alert.id} className="rounded-md border border-border-primary p-3 bg-bg-base">
-                    <p className="text-sm font-medium text-text-primary">{alert.title}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <CheckCircle2 className="h-8 w-8 text-status-success opacity-50 mb-2" />
-                  <p className="text-sm text-text-muted">No active alerts.</p>
+            <div className="flex-1 overflow-auto p-2 space-y-2">
+              {alerts.length > 0 ? alerts.map(a => (
+                <div key={a.id} className="text-[11px] p-1.5 border-l-2 border-status-danger bg-bg-base">
+                  <div className="font-bold text-text-primary">{a.title}</div>
+                  <div className="text-text-muted mt-0.5">{new Date().toLocaleTimeString()}</div>
+                </div>
+              )) : (
+                <div className="text-[11px] text-text-muted italic flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3 text-status-success" />
+                  No critical events active.
                 </div>
               )}
+              {maintenance.map(m => (
+                <div key={m.id} className="text-[11px] p-1.5 border-l-2 border-status-warning bg-bg-base">
+                  <div className="font-bold text-text-primary">{m.type} - {m.location}</div>
+                  <div className="text-status-warning mt-0.5 uppercase">{m.status}</div>
+                </div>
+              ))}
+              <div className="text-[11px] p-1.5 border-l-2 border-status-info bg-bg-base">
+                <div className="font-bold text-text-primary">Weather Status</div>
+                <div className="text-text-muted mt-0.5">{weather?.global_status || 'Clear'}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Extremes */}
+          <div className="bg-bg-surface border border-border-primary p-2 shrink-0 space-y-2">
+            <div className="flex justify-between items-center p-1.5 bg-bg-base border border-border-primary rounded">
+              <span className="text-[10px] text-text-muted uppercase font-bold">Most Delayed</span>
+              <span className="text-xs font-bold text-status-danger">TRN-{delayedTrains[0]?.number || 'NONE'}</span>
+            </div>
+            <div className="flex justify-between items-center p-1.5 bg-bg-base border border-border-primary rounded">
+              <span className="text-[10px] text-text-muted uppercase font-bold">Congested Rte</span>
+              <span className="text-xs font-bold text-status-warning">RT_SEC_KZJ</span>
             </div>
           </div>
         </div>
@@ -305,35 +300,25 @@ export default function DashboardPage() {
   );
 }
 
-function KPICard({
-  title,
-  value,
-  icon: Icon,
-  status,
-  detail,
-}: {
-  title: string;
-  value: string | number;
-  icon: any;
-  status: "success" | "warning" | "danger" | "info";
-  detail: string;
-}) {
-  const colors = {
-    success: "text-status-success",
-    warning: "text-status-warning",
-    danger: "text-status-danger",
-    info: "text-accent",
-  };
-
+function MetricBox({ label, value, color }: { label: string; value: number | string; color: string }) {
   return (
-    <div className="card flex items-center justify-between p-4 transition-colors hover:border-border-strong">
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">{title}</p>
-        <p className="mt-1 font-mono text-2xl font-bold tracking-tight text-text-primary">{value}</p>
-        <p className="mt-1 text-[10px] font-medium uppercase text-text-secondary">{detail}</p>
+    <div className="bg-bg-base border border-border-primary p-1.5 rounded flex flex-col justify-between">
+      <span className="text-[10px] text-text-muted uppercase font-bold">{label}</span>
+      <span className={`text-lg font-bold ${color}`}>{value}</span>
+    </div>
+  );
+}
+
+function ProgressRow({ label, val, max, unit }: { label: string; val: number; max: number; unit: string }) {
+  const pct = Math.min(100, Math.max(0, (val / max) * 100));
+  return (
+    <div>
+      <div className="flex justify-between text-[10px] uppercase font-bold text-text-secondary mb-1">
+        <span>{label}</span>
+        <span>{val}{unit}</span>
       </div>
-      <div className={`rounded-full bg-bg-base p-3 border border-border-primary`}>
-        <Icon className={`h-6 w-6 ${colors[status]}`} strokeWidth={1.5} />
+      <div className="h-1 w-full bg-bg-base border border-border-primary overflow-hidden">
+        <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

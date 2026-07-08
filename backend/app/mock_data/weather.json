@@ -1,20 +1,19 @@
 {
+  "global_status": "Localized rain cells near Kazipet and coastal crosswinds near Rajahmundry",
+  "last_updated": "2026-07-08T10:30:00+05:30",
   "stations": {
-    "SC": {
-      "condition": "Clear",
-      "temp_c": 32,
-      "wind_kmh": 10
-    },
-    "KZJ": {
-      "condition": "Rain",
-      "temp_c": 28,
-      "wind_kmh": 15
-    },
-    "BZA": {
-      "condition": "Cloudy",
-      "temp_c": 34,
-      "wind_kmh": 12
-    }
-  },
-  "global_status": "Rain at Kazipet"
+    "SC": { "condition": "Clear", "temp_c": 32, "wind_kmh": 10, "visibility_km": 8, "speed_factor": 1.0 },
+    "BG": { "condition": "Clear", "temp_c": 31, "wind_kmh": 8, "visibility_km": 8, "speed_factor": 1.0 },
+    "KZJ": { "condition": "Rain", "temp_c": 28, "wind_kmh": 15, "visibility_km": 5, "speed_factor": 0.88 },
+    "WL": { "condition": "Light Rain", "temp_c": 28, "wind_kmh": 12, "visibility_km": 6, "speed_factor": 0.92 },
+    "KMT": { "condition": "Cloudy", "temp_c": 30, "wind_kmh": 11, "visibility_km": 7, "speed_factor": 1.0 },
+    "BZA": { "condition": "Cloudy", "temp_c": 34, "wind_kmh": 12, "visibility_km": 7, "speed_factor": 1.0 },
+    "GNT": { "condition": "Humid", "temp_c": 33, "wind_kmh": 9, "visibility_km": 7, "speed_factor": 1.0 },
+    "OGL": { "condition": "Haze", "temp_c": 32, "wind_kmh": 16, "visibility_km": 5, "speed_factor": 0.94 },
+    "NLR": { "condition": "Clear", "temp_c": 31, "wind_kmh": 14, "visibility_km": 8, "speed_factor": 1.0 },
+    "RJY": { "condition": "Crosswind", "temp_c": 33, "wind_kmh": 24, "visibility_km": 7, "speed_factor": 0.9 },
+    "SLO": { "condition": "Cloudy", "temp_c": 32, "wind_kmh": 18, "visibility_km": 7, "speed_factor": 0.96 },
+    "VSKP": { "condition": "Sea Breeze", "temp_c": 30, "wind_kmh": 22, "visibility_km": 8, "speed_factor": 0.95 },
+    "TPTY": { "condition": "Clear", "temp_c": 31, "wind_kmh": 7, "visibility_km": 9, "speed_factor": 1.0 }
+  }
 }

@@ -8,6 +8,7 @@ const StationsPage = lazy(() => import("./features/stations/StationsPage"));
 const SignalsPage = lazy(() => import("./features/signals/SignalsPage"));
 const AlertsPage = lazy(() => import("./features/alerts/AlertsPage"));
 const RoutesPage = lazy(() => import("./features/routes/RoutesPage"));
+const RoutePlannerPage = lazy(() => import("./features/route-planner/RoutePlannerPage"));
 const DigitalTwinPage = lazy(() => import("./features/digital-twin/DigitalTwinPage"));
 const MaintenancePage = lazy(() => import("./features/maintenance/MaintenancePage"));
 const AiInsightsPage = lazy(() => import("./features/ai-insights/AiInsightsPage"));
@@ -26,6 +27,7 @@ export function AppRouter() {
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
           <Route path="digital-twin" element={<DigitalTwinPage />} />
+          <Route path="route-planner" element={<RoutePlannerPage />} />
           <Route path="trains" element={<TrainsPage />} />
           <Route path="stations" element={<StationsPage />} />
           <Route path="signals" element={<SignalsPage />} />
