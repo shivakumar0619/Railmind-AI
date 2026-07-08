@@ -1,0 +1,54 @@
+{
+  "aspects": [
+    {
+      "id": "stop",
+      "label": "Stop",
+      "color": "#dc2626",
+      "meaning": "Danger — do not pass signal",
+      "driver_action": "Stop and stay"
+    },
+    {
+      "id": "caution",
+      "label": "Caution",
+      "color": "#eab308",
+      "meaning": "Next signal is at Stop",
+      "driver_action": "Proceed, prepare to stop at next signal"
+    },
+    {
+      "id": "attention",
+      "label": "Attention",
+      "color": "#ca8a04",
+      "meaning": "Next signal is at Caution (double yellow)",
+      "driver_action": "Proceed at restricted speed"
+    },
+    {
+      "id": "clear",
+      "label": "Clear",
+      "color": "#16a34a",
+      "meaning": "Section ahead is clear",
+      "driver_action": "Proceed at permissible speed"
+    }
+  ],
+  "types": [
+    {
+      "id": "distant",
+      "label": "Distant Signal",
+      "description": "Pre-warns driver of upcoming stop signal aspect. Located ~1 km before first stop signal."
+    },
+    {
+      "id": "home",
+      "label": "Home Signal",
+      "description": "Controls entry into station limits. First stop signal approaching a station."
+    },
+    {
+      "id": "starter",
+      "label": "Starter Signal",
+      "description": "Controls departure from station. Marks the limit of train advance within station."
+    },
+    {
+      "id": "advanced_starter",
+      "label": "Advanced Starter",
+      "description": "Permits entry into block section ahead. Last signal before leaving station limits."
+    }
+  ]
+}

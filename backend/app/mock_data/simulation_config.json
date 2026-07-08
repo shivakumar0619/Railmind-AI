@@ -1,0 +1,6 @@
+{
+  "simulation_speed_multiplier": 60,
+  "tick_rate_ms": 1000,
+  "random_delay_chance": 0.05,
+  "signal_degradation_chance": 0.02
+}

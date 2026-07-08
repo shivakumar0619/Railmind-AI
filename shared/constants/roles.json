@@ -1,0 +1,29 @@
+{
+  "roles": [
+    {
+      "id": "administrator",
+      "label": "Administrator",
+      "description": "Full system access including user management and configuration"
+    },
+    {
+      "id": "dispatcher",
+      "label": "Dispatcher",
+      "description": "Manage trains, routes, signals, and alerts. Generate reports."
+    },
+    {
+      "id": "operator",
+      "label": "Operator",
+      "description": "Manage trains and alerts. Read-only access to stations, signals, routes."
+    },
+    {
+      "id": "maintenance_engineer",
+      "label": "Maintenance Engineer",
+      "description": "Manage maintenance tasks and signals. Read-only access to operational data."
+    },
+    {
+      "id": "viewer",
+      "label": "Viewer",
+      "description": "Read-only access to all operational data. No mutations."
+    }
+  ]
+}

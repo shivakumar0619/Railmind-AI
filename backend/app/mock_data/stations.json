@@ -1,0 +1,101 @@
+[
+  {
+    "id": "st_sc",
+    "code": "SC",
+    "name": "Secunderabad Jn",
+    "lat": 17.4336,
+    "lng": 78.5015,
+    "platforms": 10,
+    "zone": "SCR",
+    "division": "SC",
+    "distance_from_sc": 0
+  },
+  {
+    "id": "st_bg",
+    "code": "BG",
+    "name": "Bhongir",
+    "lat": 17.5109,
+    "lng": 78.8927,
+    "platforms": 3,
+    "zone": "SCR",
+    "division": "SC",
+    "distance_from_sc": 46
+  },
+  {
+    "id": "st_aler",
+    "code": "ALER",
+    "name": "Aler",
+    "lat": 17.6369,
+    "lng": 79.0543,
+    "platforms": 3,
+    "zone": "SCR",
+    "division": "SC",
+    "distance_from_sc": 69
+  },
+  {
+    "id": "st_zn",
+    "code": "ZN",
+    "name": "Jangaon",
+    "lat": 17.7258,
+    "lng": 79.1557,
+    "platforms": 3,
+    "zone": "SCR",
+    "division": "SC",
+    "distance_from_sc": 84
+  },
+  {
+    "id": "st_kzj",
+    "code": "KZJ",
+    "name": "Kazipet Jn",
+    "lat": 17.9749,
+    "lng": 79.5226,
+    "platforms": 4,
+    "zone": "SCR",
+    "division": "SC",
+    "distance_from_sc": 132
+  },
+  {
+    "id": "st_wl",
+    "code": "WL",
+    "name": "Warangal",
+    "lat": 17.9942,
+    "lng": 79.6015,
+    "platforms": 4,
+    "zone": "SCR",
+    "division": "SC",
+    "distance_from_sc": 142
+  },
+  {
+    "id": "st_mabd",
+    "code": "MABD",
+    "name": "Mahbubabad",
+    "lat": 17.5959,
+    "lng": 80.009,
+    "platforms": 3,
+    "zone": "SCR",
+    "division": "SC",
+    "distance_from_sc": 202
+  },
+  {
+    "id": "st_kmt",
+    "code": "KMT",
+    "name": "Khammam",
+    "lat": 17.2505,
+    "lng": 80.1415,
+    "platforms": 4,
+    "zone": "SCR",
+    "division": "SC",
+    "distance_from_sc": 249
+  },
+  {
+    "id": "st_bza",
+    "code": "BZA",
+    "name": "Vijayawada Jn",
+    "lat": 16.5186,
+    "lng": 80.62,
+    "platforms": 10,
+    "zone": "SCR",
+    "division": "BZA",
+    "distance_from_sc": 349
+  }
+]

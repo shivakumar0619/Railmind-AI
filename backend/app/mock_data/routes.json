@@ -1,0 +1,58 @@
+[
+  {
+    "id": "rt_sc_bg",
+    "source_code": "SC",
+    "target_code": "BG",
+    "distance_km": 46,
+    "max_speed_kmh": 130
+  },
+  {
+    "id": "rt_bg_aler",
+    "source_code": "BG",
+    "target_code": "ALER",
+    "distance_km": 23,
+    "max_speed_kmh": 130
+  },
+  {
+    "id": "rt_aler_zn",
+    "source_code": "ALER",
+    "target_code": "ZN",
+    "distance_km": 15,
+    "max_speed_kmh": 130
+  },
+  {
+    "id": "rt_zn_kzj",
+    "source_code": "ZN",
+    "target_code": "KZJ",
+    "distance_km": 48,
+    "max_speed_kmh": 130
+  },
+  {
+    "id": "rt_kzj_wl",
+    "source_code": "KZJ",
+    "target_code": "WL",
+    "distance_km": 10,
+    "max_speed_kmh": 110
+  },
+  {
+    "id": "rt_wl_mabd",
+    "source_code": "WL",
+    "target_code": "MABD",
+    "distance_km": 60,
+    "max_speed_kmh": 130
+  },
+  {
+    "id": "rt_mabd_kmt",
+    "source_code": "MABD",
+    "target_code": "KMT",
+    "distance_km": 47,
+    "max_speed_kmh": 130
+  },
+  {
+    "id": "rt_kmt_bza",
+    "source_code": "KMT",
+    "target_code": "BZA",
+    "distance_km": 100,
+    "max_speed_kmh": 130
+  }
+]

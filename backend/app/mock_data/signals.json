@@ -1,0 +1,322 @@
+[
+  {
+    "id": "sig_SC_BG_0",
+    "route_id": "rt_sc_bg",
+    "block_index": 0,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_SC_BG_1",
+    "route_id": "rt_sc_bg",
+    "block_index": 1,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_SC_BG_2",
+    "route_id": "rt_sc_bg",
+    "block_index": 2,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_SC_BG_3",
+    "route_id": "rt_sc_bg",
+    "block_index": 3,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_BG_ALER_0",
+    "route_id": "rt_bg_aler",
+    "block_index": 0,
+    "total_blocks": 2,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_BG_ALER_1",
+    "route_id": "rt_bg_aler",
+    "block_index": 1,
+    "total_blocks": 2,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_ALER_ZN_0",
+    "route_id": "rt_aler_zn",
+    "block_index": 0,
+    "total_blocks": 1,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_ZN_KZJ_0",
+    "route_id": "rt_zn_kzj",
+    "block_index": 0,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_ZN_KZJ_1",
+    "route_id": "rt_zn_kzj",
+    "block_index": 1,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_ZN_KZJ_2",
+    "route_id": "rt_zn_kzj",
+    "block_index": 2,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_ZN_KZJ_3",
+    "route_id": "rt_zn_kzj",
+    "block_index": 3,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KZJ_WL_0",
+    "route_id": "rt_kzj_wl",
+    "block_index": 0,
+    "total_blocks": 1,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_WL_MABD_0",
+    "route_id": "rt_wl_mabd",
+    "block_index": 0,
+    "total_blocks": 6,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_WL_MABD_1",
+    "route_id": "rt_wl_mabd",
+    "block_index": 1,
+    "total_blocks": 6,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_WL_MABD_2",
+    "route_id": "rt_wl_mabd",
+    "block_index": 2,
+    "total_blocks": 6,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_WL_MABD_3",
+    "route_id": "rt_wl_mabd",
+    "block_index": 3,
+    "total_blocks": 6,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_WL_MABD_4",
+    "route_id": "rt_wl_mabd",
+    "block_index": 4,
+    "total_blocks": 6,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_WL_MABD_5",
+    "route_id": "rt_wl_mabd",
+    "block_index": 5,
+    "total_blocks": 6,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_MABD_KMT_0",
+    "route_id": "rt_mabd_kmt",
+    "block_index": 0,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_MABD_KMT_1",
+    "route_id": "rt_mabd_kmt",
+    "block_index": 1,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_MABD_KMT_2",
+    "route_id": "rt_mabd_kmt",
+    "block_index": 2,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_MABD_KMT_3",
+    "route_id": "rt_mabd_kmt",
+    "block_index": 3,
+    "total_blocks": 4,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_0",
+    "route_id": "rt_kmt_bza",
+    "block_index": 0,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_1",
+    "route_id": "rt_kmt_bza",
+    "block_index": 1,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_2",
+    "route_id": "rt_kmt_bza",
+    "block_index": 2,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_3",
+    "route_id": "rt_kmt_bza",
+    "block_index": 3,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_4",
+    "route_id": "rt_kmt_bza",
+    "block_index": 4,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_5",
+    "route_id": "rt_kmt_bza",
+    "block_index": 5,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_6",
+    "route_id": "rt_kmt_bza",
+    "block_index": 6,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_7",
+    "route_id": "rt_kmt_bza",
+    "block_index": 7,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_8",
+    "route_id": "rt_kmt_bza",
+    "block_index": 8,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  },
+  {
+    "id": "sig_KMT_BZA_9",
+    "route_id": "rt_kmt_bza",
+    "block_index": 9,
+    "total_blocks": 10,
+    "aspect": "clear",
+    "health_score": 100,
+    "lat": 0.0,
+    "lng": 0.0
+  }
+]

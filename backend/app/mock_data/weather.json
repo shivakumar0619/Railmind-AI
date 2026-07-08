@@ -1,0 +1,20 @@
+{
+  "stations": {
+    "SC": {
+      "condition": "Clear",
+      "temp_c": 32,
+      "wind_kmh": 10
+    },
+    "KZJ": {
+      "condition": "Rain",
+      "temp_c": 28,
+      "wind_kmh": 15
+    },
+    "BZA": {
+      "condition": "Cloudy",
+      "temp_c": 34,
+      "wind_kmh": 12
+    }
+  },
+  "global_status": "Rain at Kazipet"
+}

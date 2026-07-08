@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: railmind-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: railmind
+      POSTGRES_PASSWORD: railmind
+      POSTGRES_DB: railmind
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U railmind -d railmind"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - railmind-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: railmind-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://railmind:railmind@postgres:5432/railmind
+      APP_ENV: production
+      APP_DEBUG: "false"
+      LOG_FORMAT: json
+      CORS_ORIGINS: '["*"]'
+    ports:
+      - "8000:8000"
+    networks:
+      - railmind-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    container_name: railmind-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - railmind-network
+
+volumes:
+  postgres_data:
+    name: railmind-postgres-data
+
+networks:
+  railmind-network:
+    name: railmind-network
+    driver: bridge

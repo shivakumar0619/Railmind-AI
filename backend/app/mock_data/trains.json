@@ -1,0 +1,62 @@
+[
+  {
+    "id": "tr_12723",
+    "number": "12723",
+    "name": "Telangana Express",
+    "type": "superfast",
+    "status": "running",
+    "current_speed_kmh": 110,
+    "current_route_id": "rt_sc_bg",
+    "progress_pct": 50,
+    "direction": "UP",
+    "delay_minutes": 0
+  },
+  {
+    "id": "tr_12704",
+    "number": "12704",
+    "name": "Falaknuma Express",
+    "type": "superfast",
+    "status": "running",
+    "current_speed_kmh": 100,
+    "current_route_id": "rt_zn_kzj",
+    "progress_pct": 20,
+    "direction": "UP",
+    "delay_minutes": 5
+  },
+  {
+    "id": "tr_12759",
+    "number": "12759",
+    "name": "Charminar Express",
+    "type": "superfast",
+    "status": "running",
+    "current_speed_kmh": 120,
+    "current_route_id": "rt_kmt_bza",
+    "progress_pct": 80,
+    "direction": "UP",
+    "delay_minutes": 0
+  },
+  {
+    "id": "tr_12805",
+    "number": "12805",
+    "name": "Janmabhoomi Exp",
+    "type": "express",
+    "status": "stopped",
+    "current_speed_kmh": 0,
+    "current_route_id": "rt_kzj_wl",
+    "progress_pct": 100,
+    "direction": "DOWN",
+    "delay_minutes": 15
+  },
+  {
+    "id": "tr_70021",
+    "number": "70021",
+    "name": "Freight BCNHL",
+    "type": "freight",
+    "status": "running",
+    "current_speed_kmh": 65,
+    "current_route_id": "rt_wl_mabd",
+    "progress_pct": 30,
+    "direction": "DOWN",
+    "delay_minutes": 0
+  }
+]

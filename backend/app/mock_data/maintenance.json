@@ -1,0 +1,18 @@
+[
+  {
+    "id": "maint_1",
+    "type": "Signal Calibration",
+    "location": "rt_kzj_wl",
+    "status": "In Progress",
+    "urgency": "Medium",
+    "due": "Today"
+  },
+  {
+    "id": "maint_2",
+    "type": "Track Inspection",
+    "location": "rt_sc_bg",
+    "status": "Scheduled",
+    "urgency": "High",
+    "due": "Tomorrow"
+  }
+]
