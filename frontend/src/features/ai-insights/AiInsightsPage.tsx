@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { Brain, Lightbulb, TrendingUp, AlertTriangle, Activity } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 
 interface Insight {
@@ -10,24 +10,13 @@ interface Insight {
 }
 
 export default function AiInsightsPage() {
-  const [insights, setInsights] = useState<Insight[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: insightsData, isLoading: loading } = useQuery({
+    queryKey: ["insights"],
+    queryFn: async () => (await api.get("/api/insights")).data.data,
+    refetchInterval: 1000,
+  });
 
-  useEffect(() => {
-    const fetchInsights = async () => {
-      try {
-        const res = await api.get("/api/insights");
-        setInsights(res.data.data);
-        setLoading(false);
-      } catch (e) {
-        console.error("Insights poll failed", e);
-      }
-    };
-
-    fetchInsights();
-    const interval = setInterval(fetchInsights, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const insights = insightsData || [];
 
   const getIcon = (type: string) => {
     if (type === "routing") return TrendingUp;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
@@ -19,41 +19,82 @@ import {
 import { api } from "../../lib/api";
 import TrackMap from "../digital-twin/components/TrackMap";
 import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
+import { Component, ErrorInfo, ReactNode } from "react";
 
-export default function DashboardPage() {
-  const [stats, setStats] = useState<any>(null);
-  const [trains, setTrains] = useState<any[]>([]);
-  const [alerts, setAlerts] = useState<any[]>([]);
-  const [maintenance, setMaintenance] = useState<any[]>([]);
-  const [weather, setWeather] = useState<any>(null);
+// Local Error Boundary to catch render errors
+class DashboardErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(_: Error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Dashboard caught error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex h-full items-center justify-center bg-bg-base text-status-danger font-mono text-xs uppercase p-4 text-center">
+          <div>
+            <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
+            <p>Dashboard Render Failure</p>
+            <p className="text-text-muted mt-2">Falling back to safe mode. Retrying...</p>
+            <button 
+              className="mt-4 px-3 py-1 border border-status-danger text-status-danger hover:bg-status-danger/10"
+              onClick={() => this.setState({ hasError: false })}
+            >
+              Reset Dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
-  // Poll simulation engine data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [stRes, trRes, alRes, mtRes, weRes] = await Promise.all([
-          api.get("/api/dashboard/stats"),
-          api.get("/api/trains"),
-          api.get("/api/alerts"),
-          api.get("/api/maintenance"),
-          api.get("/api/weather"),
-        ]);
-        setStats(stRes.data.data);
-        setTrains(trRes.data.data);
-        setAlerts(alRes.data.data);
-        setMaintenance(mtRes.data.data);
-        setWeather(weRes.data.data);
-      } catch (err) {
-        console.error("Dashboard poll failed", err);
-      }
-    };
+function DashboardContent() {
+  // Use React Query for defensive fetching with caching, retry, and stale-while-revalidate
+  const { data: statsData, isLoading: loadingStats } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: async () => (await api.get("/api/dashboard/stats")).data.data,
+    refetchInterval: 2000,
+  });
 
-    fetchData();
-    const interval = setInterval(fetchData, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const { data: trainsData, isLoading: loadingTrains } = useQuery({
+    queryKey: ["trains"],
+    queryFn: async () => (await api.get("/api/trains")).data.data,
+    refetchInterval: 1000,
+  });
 
-  if (!stats) {
+  const { data: alertsData } = useQuery({
+    queryKey: ["alerts"],
+    queryFn: async () => (await api.get("/api/alerts")).data.data,
+    refetchInterval: 2000,
+  });
+
+  const { data: maintenanceData } = useQuery({
+    queryKey: ["maintenance"],
+    queryFn: async () => (await api.get("/api/maintenance")).data.data,
+    refetchInterval: 5000,
+  });
+
+  const { data: weatherData } = useQuery({
+    queryKey: ["weather"],
+    queryFn: async () => (await api.get("/api/weather")).data.data,
+    refetchInterval: 10000,
+  });
+
+  // Safe fallbacks for data
+  const stats = statsData || { corridor: "SCR", signal_health: 100, critical_alerts: 0 };
+  const trains = trainsData || [];
+  const alerts = alertsData || [];
+  const maintenance = maintenanceData || [];
+  const weather = weatherData || { stations: {}, global_status: "Clear" };
+
+  if (loadingStats && !statsData) {
     return (
       <div className="flex h-full items-center justify-center bg-bg-base">
         <Activity className="h-8 w-8 animate-pulse text-accent" />
@@ -61,18 +102,16 @@ export default function DashboardPage() {
     );
   }
 
-  const activeTrains = trains.filter((t) => t.status === "running");
-  const stoppedTrains = trains.filter((t) => t.status === "stopped");
-  const delayedTrains = trains.filter((t) => t.delay_minutes > 0);
-  const cancelledTrains = trains.filter((t) => t.status === "cancelled");
+  const activeTrains = trains.filter((t: any) => t.status === "running" || t.status === "waiting");
+  const stoppedTrains = trains.filter((t: any) => t.status === "at_station");
+  const delayedTrains = trains.filter((t: any) => t.delay_minutes > 0).sort((a: any, b: any) => b.delay_minutes - a.delay_minutes);
+  const cancelledTrains = trains.filter((t: any) => t.status === "cancelled");
 
-  // Mock data for sparklines
-  const speedData = Array.from({ length: 20 }).map((_, i) => ({ val: 60 + Math.random() * 40 }));
-  const delayData = Array.from({ length: 20 }).map((_, i) => ({ val: Math.random() * 15 }));
+  const speedData = Array.from({ length: 20 }).map(() => ({ val: 60 + Math.random() * 40 }));
+  const delayData = Array.from({ length: 20 }).map(() => ({ val: Math.random() * 15 }));
 
   return (
     <div className="flex flex-col gap-2 h-[calc(100vh-6rem)] overflow-hidden font-mono text-sm bg-bg-base">
-      {/* Header bar */}
       <div className="flex items-center justify-between border-b border-border-primary pb-2 shrink-0">
         <div className="flex items-center gap-3">
           <Activity className="h-5 w-5 text-accent" />
@@ -95,44 +134,39 @@ export default function DashboardPage() {
       </div>
 
       <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
-        {/* Left Column - Key Metrics & Map */}
+        {/* Left Column */}
         <div className="w-[300px] shrink-0 flex flex-col gap-2 min-h-0 overflow-y-auto pr-1">
-          {/* Train Status */}
           <div className="bg-bg-surface border border-border-primary p-2">
             <div className="text-xs font-bold uppercase text-text-secondary border-b border-border-primary pb-1 mb-2">Fleet Status</div>
             <div className="grid grid-cols-2 gap-2">
               <MetricBox label="Running" value={activeTrains.length} color="text-status-success" />
-              <MetricBox label="Stopped" value={stoppedTrains.length} color="text-status-warning" />
+              <MetricBox label="Dwelling" value={stoppedTrains.length} color="text-status-info" />
               <MetricBox label="Delayed" value={delayedTrains.length} color="text-status-warning" />
               <MetricBox label="Cancelled" value={cancelledTrains.length} color="text-status-danger" />
             </div>
           </div>
 
-          {/* Network Health */}
           <div className="bg-bg-surface border border-border-primary p-2">
             <div className="text-xs font-bold uppercase text-text-secondary border-b border-border-primary pb-1 mb-2">Network Health</div>
             <div className="space-y-2">
-              <ProgressRow label="Signal Health" val={stats.signal_health} max={100} unit="%" />
-              <ProgressRow label="Occupancy" val={34} max={100} unit="%" />
+              <ProgressRow label="Signal Health" val={stats.signal_health || 100} max={100} unit="%" />
+              <ProgressRow label="Occupancy" val={Math.min(100, Math.round((activeTrains.length / 100) * 100))} max={100} unit="%" />
               <div className="flex justify-between items-center text-xs mt-1 pt-1 border-t border-border-primary">
                 <span className="text-text-muted">Crit Alerts</span>
-                <span className={`font-bold ${stats.critical_alerts > 0 ? 'text-status-danger' : 'text-status-success'}`}>{stats.critical_alerts}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-text-muted">Emergency</span>
-                <span className="font-bold text-status-success">0</span>
+                <span className={`font-bold ${stats.critical_alerts > 0 ? 'text-status-danger' : 'text-status-success'}`}>{stats.critical_alerts || 0}</span>
               </div>
             </div>
           </div>
 
-          {/* Performance Analytics */}
           <div className="bg-bg-surface border border-border-primary p-2 flex-1 min-h-[150px] flex flex-col">
             <div className="text-xs font-bold uppercase text-text-secondary border-b border-border-primary pb-1 mb-2 shrink-0">Analytics</div>
             <div className="flex-1 flex flex-col gap-2">
               <div className="bg-bg-base border border-border-primary p-2 rounded">
                 <div className="flex justify-between items-end mb-1">
                   <span className="text-[10px] text-text-muted uppercase">Avg Speed</span>
-                  <span className="text-sm font-bold text-text-primary">68 km/h</span>
+                  <span className="text-sm font-bold text-text-primary">
+                    {trains.length ? Math.round(trains.reduce((acc: number, t: any) => acc + (t.current_speed_kmh || 0), 0) / trains.length) : 0} km/h
+                  </span>
                 </div>
                 <div className="h-8">
                   <ResponsiveContainer width="100%" height="100%">
@@ -146,7 +180,9 @@ export default function DashboardPage() {
               <div className="bg-bg-base border border-border-primary p-2 rounded">
                 <div className="flex justify-between items-end mb-1">
                   <span className="text-[10px] text-text-muted uppercase">Avg Delay</span>
-                  <span className="text-sm font-bold text-status-warning">4.2 min</span>
+                  <span className="text-sm font-bold text-status-warning">
+                    {delayedTrains.length ? Math.round(delayedTrains.reduce((acc: number, t: any) => acc + (t.delay_minutes || 0), 0) / delayedTrains.length) : 0} min
+                  </span>
                 </div>
                 <div className="h-8">
                   <ResponsiveContainer width="100%" height="100%">
@@ -161,9 +197,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Middle Column - Telemetry & Digital Twin */}
+        {/* Middle Column */}
         <div className="flex-1 flex flex-col gap-2 min-h-0 min-w-[400px]">
-          {/* Digital Twin Mini */}
           <div className="h-[250px] shrink-0 bg-bg-surface border border-border-primary p-1 relative overflow-hidden flex flex-col">
             <div className="absolute top-2 left-2 z-10 bg-bg-surface/80 backdrop-blur border border-border-primary px-2 py-1 flex items-center gap-2">
               <MapIcon className="h-3.5 w-3.5 text-accent" />
@@ -171,18 +206,19 @@ export default function DashboardPage() {
             </div>
             <div className="flex-1 w-full h-full border border-border-primary rounded overflow-hidden">
               <TrackMap
-                stations={Object.entries(weather?.stations || {}).map(([id, d]: [string, any]) => ({
+                stations={Object.entries(weather?.stations || {}).map(([id, _d]: [string, any]) => ({
                   id,
                   name: id,
                   lat: 17.3850 + (Math.random() - 0.5) * 0.1,
                   lng: 78.4867 + (Math.random() - 0.5) * 0.1
                 }))}
                 trains={trains}
+                routes={[]}
+                signals={[]}
               />
             </div>
           </div>
 
-          {/* Live Train Feed */}
           <div className="flex-1 bg-bg-surface border border-border-primary flex flex-col min-h-0">
             <div className="p-2 border-b border-border-primary bg-bg-surface-hover flex justify-between items-center shrink-0">
               <span className="text-xs uppercase font-bold text-text-secondary">Active Telemetry Stream</span>
@@ -200,22 +236,22 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-primary">
-                  {trains.map((train) => (
+                  {trains.slice(0, 15).map((train: any) => (
                     <tr key={train.id} className="hover:bg-bg-surface-hover/50 transition-colors">
                       <td className="px-2 py-1.5">
                         <div className="font-bold text-text-primary">{train.number}</div>
                       </td>
                       <td className="px-2 py-1.5 text-text-secondary truncate max-w-[80px]" title={train.current_route_id}>
-                        {train.current_route_id.replace("rt_", "").toUpperCase()}
+                        {train.current_route_id ? train.current_route_id.replace("rt_", "").toUpperCase() : "N/A"}
                       </td>
                       <td className="px-2 py-1.5 text-text-primary">
-                        {Math.round(train.current_speed_kmh)}
+                        {Math.round(train.current_speed_kmh || 0)}
                       </td>
                       <td className="px-2 py-1.5">
                         <div className="w-12 h-1.5 bg-bg-base border border-border-primary">
                           <div
-                            className={`h-full ${train.status === 'stopped' ? 'bg-status-warning' : 'bg-status-success'}`}
-                            style={{ width: `${Math.min(100, train.progress_pct)}%` }}
+                            className={`h-full ${train.status === 'at_station' ? 'bg-status-info' : (train.status === 'waiting' ? 'bg-status-danger' : 'bg-status-success')}`}
+                            style={{ width: `${Math.min(100, train.progress_pct || 0)}%` }}
                           />
                         </div>
                       </td>
@@ -234,9 +270,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right Column - Events & Insights */}
+        {/* Right Column */}
         <div className="w-[300px] shrink-0 flex flex-col gap-2 min-h-0 overflow-y-auto">
-          {/* Insights */}
           <div className="bg-bg-surface border border-border-primary flex flex-col p-2 h-[120px] shrink-0">
             <div className="flex items-center gap-2 border-b border-border-primary pb-1 mb-2 text-text-secondary">
               <BrainCircuit className="h-3.5 w-3.5 text-purple-400" />
@@ -252,17 +287,16 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Incidents / Alerts */}
           <div className="bg-bg-surface border border-border-primary flex flex-col flex-1 min-h-[150px]">
             <div className="p-2 border-b border-border-primary flex items-center gap-2 text-text-secondary">
               <AlertOctagon className="h-3.5 w-3.5 text-status-danger" />
               <span className="text-xs uppercase font-bold">System Events</span>
             </div>
             <div className="flex-1 overflow-auto p-2 space-y-2">
-              {alerts.length > 0 ? alerts.map(a => (
-                <div key={a.id} className="text-[11px] p-1.5 border-l-2 border-status-danger bg-bg-base">
+              {alerts.length > 0 ? alerts.slice(0, 5).map((a: any) => (
+                <div key={a.id} className={`text-[11px] p-1.5 border-l-2 bg-bg-base ${a.severity === 'high' ? 'border-status-danger' : 'border-status-warning'}`}>
                   <div className="font-bold text-text-primary">{a.title}</div>
-                  <div className="text-text-muted mt-0.5">{new Date().toLocaleTimeString()}</div>
+                  <div className="text-text-muted mt-0.5">{new Date(a.created_at || Date.now()).toLocaleTimeString()}</div>
                 </div>
               )) : (
                 <div className="text-[11px] text-text-muted italic flex items-center gap-1">
@@ -270,7 +304,7 @@ export default function DashboardPage() {
                   No critical events active.
                 </div>
               )}
-              {maintenance.map(m => (
+              {maintenance.map((m: any) => (
                 <div key={m.id} className="text-[11px] p-1.5 border-l-2 border-status-warning bg-bg-base">
                   <div className="font-bold text-text-primary">{m.type} - {m.location}</div>
                   <div className="text-status-warning mt-0.5 uppercase">{m.status}</div>
@@ -283,15 +317,10 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Extremes */}
           <div className="bg-bg-surface border border-border-primary p-2 shrink-0 space-y-2">
             <div className="flex justify-between items-center p-1.5 bg-bg-base border border-border-primary rounded">
               <span className="text-[10px] text-text-muted uppercase font-bold">Most Delayed</span>
               <span className="text-xs font-bold text-status-danger">TRN-{delayedTrains[0]?.number || 'NONE'}</span>
-            </div>
-            <div className="flex justify-between items-center p-1.5 bg-bg-base border border-border-primary rounded">
-              <span className="text-[10px] text-text-muted uppercase font-bold">Congested Rte</span>
-              <span className="text-xs font-bold text-status-warning">RT_SEC_KZJ</span>
             </div>
           </div>
         </div>
@@ -318,8 +347,16 @@ function ProgressRow({ label, val, max, unit }: { label: string; val: number; ma
         <span>{val}{unit}</span>
       </div>
       <div className="h-1 w-full bg-bg-base border border-border-primary overflow-hidden">
-        <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
+        <div className="h-full bg-accent transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <DashboardErrorBoundary>
+      <DashboardContent />
+    </DashboardErrorBoundary>
   );
 }

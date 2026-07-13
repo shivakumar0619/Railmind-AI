@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
-import { Bell, CheckCircle2, XCircle } from "lucide-react";
+import { useState } from "react";
+import { Bell, CheckCircle2, Activity } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/api";
 
 interface AlertData {
   id: string;
@@ -21,26 +23,17 @@ const SEVERITY_STYLES: Record<string, { color: string; bg: string; border: strin
 };
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState<AlertData[]>([]);
   const [filter, setFilter] = useState<string>("all");
 
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const r = await fetch("/api/alerts");
-        const d = await r.json();
-        setAlerts(d.data);
-      } catch (e) {
-        console.error("Alerts poll failed", e);
-      }
-    };
-    
-    fetchAlerts();
-    const interval = setInterval(fetchAlerts, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const { data: alertsData, isLoading } = useQuery({
+    queryKey: ["alerts"],
+    queryFn: async () => (await api.get("/api/alerts")).data.data,
+    refetchInterval: 2000,
+  });
 
-  const filtered = filter === "all" ? alerts : filter === "active" ? alerts.filter(a => !a.resolved) : alerts.filter(a => a.severity === filter);
+  const alerts = alertsData || [];
+
+  const filtered = filter === "all" ? alerts : filter === "active" ? alerts.filter((a: AlertData) => !a.resolved) : alerts.filter((a: AlertData) => a.severity === filter);
 
   return (
     <div className="space-y-6">
@@ -51,7 +44,7 @@ export default function AlertsPage() {
         </div>
         <div className="flex items-center gap-2 rounded-lg bg-status-danger-muted px-3 py-1.5">
           <Bell className="h-4 w-4 text-status-danger" />
-          <span className="text-sm font-medium text-status-danger">{alerts.filter(a => !a.resolved).length} active</span>
+          <span className="text-sm font-medium text-status-danger">{alerts.filter((a: AlertData) => !a.resolved).length} active</span>
         </div>
       </div>
 
@@ -64,43 +57,48 @@ export default function AlertsPage() {
         ))}
       </div>
 
-      {/* Alert List */}
-      <div className="space-y-3">
-        {filtered.map(alert => {
-          const s = SEVERITY_STYLES[alert.severity] || SEVERITY_STYLES.info;
-          return (
-            <div key={alert.id} className={`rounded-xl border p-4 transition-colors ${s.border} ${alert.resolved ? "opacity-60" : ""}`}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${s.color} ${s.bg}`}>{alert.severity}</span>
-                    {!alert.acknowledged && <span className="rounded bg-status-danger px-1.5 py-0.5 text-[10px] font-bold text-white">NEW</span>}
-                    {alert.resolved && <span className="flex items-center gap-1 text-[10px] text-status-success"><CheckCircle2 className="h-3 w-3" /> Resolved</span>}
+      {isLoading && !alertsData ? (
+        <div className="flex justify-center p-12">
+          <Activity className="h-8 w-8 animate-pulse text-accent" />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((alert: AlertData) => {
+            const s = SEVERITY_STYLES[alert.severity] || SEVERITY_STYLES.info;
+            return (
+              <div key={alert.id} className={`rounded-xl border p-4 transition-colors ${s.border} ${alert.resolved ? "opacity-60" : ""}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${s.color} ${s.bg}`}>{alert.severity}</span>
+                      {!alert.acknowledged && <span className="rounded bg-status-danger px-1.5 py-0.5 text-[10px] font-bold text-white">NEW</span>}
+                      {alert.resolved && <span className="flex items-center gap-1 text-[10px] text-status-success"><CheckCircle2 className="h-3 w-3" /> Resolved</span>}
+                    </div>
+                    <h3 className="mt-1.5 text-sm font-semibold text-text-primary">{alert.title}</h3>
+                    <p className="mt-1 text-xs text-text-secondary">{alert.description}</p>
+                    <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
+                      <span>Station: <span className="font-mono text-text-secondary">{alert.station_code}</span></span>
+                      <span>·</span>
+                      <span>{new Date(alert.created_at).toLocaleString()}</span>
+                    </div>
                   </div>
-                  <h3 className="mt-1.5 text-sm font-semibold text-text-primary">{alert.title}</h3>
-                  <p className="mt-1 text-xs text-text-secondary">{alert.description}</p>
-                  <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
-                    <span>Station: <span className="font-mono text-text-secondary">{alert.station_code}</span></span>
-                    <span>·</span>
-                    <span>{new Date(alert.created_at).toLocaleString()}</span>
-                  </div>
+                  {!alert.resolved && (
+                    <button className="shrink-0 rounded-lg border border-border-primary px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-bg-surface-hover hover:text-text-primary">
+                      Acknowledge
+                    </button>
+                  )}
                 </div>
-                {!alert.resolved && (
-                  <button className="shrink-0 rounded-lg border border-border-primary px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-bg-surface-hover hover:text-text-primary">
-                    Acknowledge
-                  </button>
-                )}
               </div>
+            );
+          })}
+          {filtered.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <CheckCircle2 className="h-10 w-10 text-status-success" />
+              <p className="mt-3 text-sm text-text-secondary">No alerts match the current filter.</p>
             </div>
-          );
-        })}
-        {filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <CheckCircle2 className="h-10 w-10 text-status-success" />
-            <p className="mt-3 text-sm text-text-secondary">No alerts match the current filter.</p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

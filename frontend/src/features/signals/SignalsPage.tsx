@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
-import { CircleDot, AlertTriangle, Wrench, CheckCircle2, Filter, Hash, Type, HeartPulse, Square, ShieldCheck, Inbox } from "lucide-react";
+import { useState } from "react";
+import { CircleDot, AlertTriangle, Wrench, CheckCircle2, Filter, Hash, Type, HeartPulse, Square, ShieldCheck, Inbox, Activity } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/api";
 
 interface SignalData {
   id: string;
@@ -22,14 +24,15 @@ const ASPECT_COLORS: Record<string, string> = {
 };
 
 export default function SignalsPage() {
-  const [signals, setSignals] = useState<SignalData[]>([]);
-  const [filterAspect, setFilterAspect] = useState<string>("all");
+  const { data: signalsData, isLoading } = useQuery({
+    queryKey: ["signals"],
+    queryFn: async () => (await api.get("/api/signals")).data.data,
+    refetchInterval: 5000,
+  });
 
-  useEffect(() => {
-    fetch("/api/signals").then(r => r.json()).then(d => setSignals(d.data));
-  }, []);
+  const signals = signalsData || [];
 
-  const filteredSignals = filterAspect === "all" ? signals : signals.filter(s => s.aspect.toLowerCase() === filterAspect);
+  const filteredSignals = filterAspect === "all" ? signals : signals.filter((s: SignalData) => s.aspect.toLowerCase() === filterAspect);
 
   return (
     <div className="space-y-6">
@@ -54,6 +57,11 @@ export default function SignalsPage() {
         </div>
       </div>
 
+      {isLoading && !signalsData ? (
+        <div className="flex justify-center p-12">
+          <Activity className="h-8 w-8 animate-pulse text-accent" />
+        </div>
+      ) : (
       <div className="rounded-xl border border-white/10 bg-black/20 backdrop-blur-md overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -134,6 +142,7 @@ export default function SignalsPage() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

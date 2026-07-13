@@ -1,6 +1,5 @@
 [
   {
-    "id": "st_001",
     "code": "SC",
     "name": "Secunderabad Jn",
     "lat": 17.4337,
@@ -8,32 +7,9 @@
     "platforms": 10,
     "zone": "SCR",
     "division": "SC",
-    "elevation": 536
+    "id": "st_001"
   },
   {
-    "id": "st_002",
-    "code": "BMT",
-    "name": "Begumpet",
-    "lat": 17.4435,
-    "lng": 78.4611,
-    "platforms": 2,
-    "zone": "SCR",
-    "division": "SC",
-    "elevation": 540
-  },
-  {
-    "id": "st_003",
-    "code": "LPI",
-    "name": "Lingampalli",
-    "lat": 17.4834,
-    "lng": 78.3188,
-    "platforms": 6,
-    "zone": "SCR",
-    "division": "SC",
-    "elevation": 559
-  },
-  {
-    "id": "st_004",
     "code": "HYB",
     "name": "Hyderabad Deccan",
     "lat": 17.3916,
@@ -41,10 +17,29 @@
     "platforms": 6,
     "zone": "SCR",
     "division": "SC",
-    "elevation": 506
+    "id": "st_002"
   },
   {
-    "id": "st_005",
+    "code": "BMT",
+    "name": "Begumpet",
+    "lat": 17.4435,
+    "lng": 78.4611,
+    "platforms": 2,
+    "zone": "SCR",
+    "division": "SC",
+    "id": "st_003"
+  },
+  {
+    "code": "LPI",
+    "name": "Lingampalli",
+    "lat": 17.4834,
+    "lng": 78.3188,
+    "platforms": 6,
+    "zone": "SCR",
+    "division": "SC",
+    "id": "st_004"
+  },
+  {
     "code": "KZJ",
     "name": "Kazipet Jn",
     "lat": 17.9756,
@@ -52,10 +47,9 @@
     "platforms": 3,
     "zone": "SCR",
     "division": "SC",
-    "elevation": 286
+    "id": "st_005"
   },
   {
-    "id": "st_006",
     "code": "WL",
     "name": "Warangal",
     "lat": 17.9818,
@@ -63,10 +57,9 @@
     "platforms": 4,
     "zone": "SCR",
     "division": "SC",
-    "elevation": 302
+    "id": "st_006"
   },
   {
-    "id": "st_007",
     "code": "MABD",
     "name": "Mahbubabad",
     "lat": 17.6033,
@@ -74,10 +67,9 @@
     "platforms": 2,
     "zone": "SCR",
     "division": "SC",
-    "elevation": 198
+    "id": "st_007"
   },
   {
-    "id": "st_008",
     "code": "KMT",
     "name": "Khammam",
     "lat": 17.2536,
@@ -85,32 +77,9 @@
     "platforms": 3,
     "zone": "SCR",
     "division": "SC",
-    "elevation": 118
+    "id": "st_008"
   },
   {
-    "id": "st_009",
-    "code": "GNT",
-    "name": "Guntur Jn",
-    "lat": 16.3056,
-    "lng": 80.4431,
-    "platforms": 7,
-    "zone": "SCR",
-    "division": "GNT",
-    "elevation": 32
-  },
-  {
-    "id": "st_010",
-    "code": "MAG",
-    "name": "Mangalagiri",
-    "lat": 16.4278,
-    "lng": 80.575,
-    "platforms": 3,
-    "zone": "SCR",
-    "division": "GNT",
-    "elevation": 33
-  },
-  {
-    "id": "st_011",
     "code": "BZA",
     "name": "Vijayawada Jn",
     "lat": 16.5186,
@@ -118,10 +87,29 @@
     "platforms": 10,
     "zone": "SCR",
     "division": "BZA",
-    "elevation": 19
+    "id": "st_009"
   },
   {
-    "id": "st_012",
+    "code": "GNT",
+    "name": "Guntur Jn",
+    "lat": 16.3056,
+    "lng": 80.4431,
+    "platforms": 7,
+    "zone": "SCR",
+    "division": "GNT",
+    "id": "st_010"
+  },
+  {
+    "code": "MAG",
+    "name": "Mangalagiri",
+    "lat": 16.4278,
+    "lng": 80.575,
+    "platforms": 3,
+    "zone": "SCR",
+    "division": "GNT",
+    "id": "st_011"
+  },
+  {
     "code": "TEL",
     "name": "Tenali Jn",
     "lat": 16.2372,
@@ -129,10 +117,9 @@
     "platforms": 5,
     "zone": "SCR",
     "division": "BZA",
-    "elevation": 11
+    "id": "st_012"
   },
   {
-    "id": "st_013",
     "code": "OGL",
     "name": "Ongole",
     "lat": 15.5057,
@@ -140,10 +127,9 @@
     "platforms": 3,
     "zone": "SCR",
     "division": "BZA",
-    "elevation": 8
+    "id": "st_013"
   },
   {
-    "id": "st_014",
     "code": "NLR",
     "name": "Nellore",
     "lat": 14.4426,
@@ -151,10 +137,9 @@
     "platforms": 4,
     "zone": "SCR",
     "division": "BZA",
-    "elevation": 18
+    "id": "st_014"
   },
   {
-    "id": "st_015",
     "code": "GDR",
     "name": "Gudur Jn",
     "lat": 14.1466,
@@ -162,10 +147,9 @@
     "platforms": 3,
     "zone": "SCR",
     "division": "BZA",
-    "elevation": 19
+    "id": "st_015"
   },
   {
-    "id": "st_016",
     "code": "RU",
     "name": "Renigunta Jn",
     "lat": 13.6391,
@@ -173,10 +157,9 @@
     "platforms": 5,
     "zone": "SCR",
     "division": "GTL",
-    "elevation": 115
+    "id": "st_016"
   },
   {
-    "id": "st_017",
     "code": "TPTY",
     "name": "Tirupati",
     "lat": 13.6288,
@@ -184,6 +167,66 @@
     "platforms": 6,
     "zone": "SCR",
     "division": "GTL",
-    "elevation": 163
+    "id": "st_017"
+  },
+  {
+    "code": "NLDA",
+    "name": "Nalgonda",
+    "lat": 17.062,
+    "lng": 79.2612,
+    "platforms": 2,
+    "zone": "SCR",
+    "division": "GNT",
+    "id": "st_018"
+  },
+  {
+    "code": "MRGA",
+    "name": "Miryalaguda",
+    "lat": 16.8833,
+    "lng": 79.5667,
+    "platforms": 2,
+    "zone": "SCR",
+    "division": "GNT",
+    "id": "st_019"
+  },
+  {
+    "code": "PGRL",
+    "name": "Piduguralla",
+    "lat": 16.4833,
+    "lng": 79.8833,
+    "platforms": 2,
+    "zone": "SCR",
+    "division": "GNT",
+    "id": "st_020"
+  },
+  {
+    "code": "NDKD",
+    "name": "Nadikudi Jn",
+    "lat": 16.5833,
+    "lng": 79.6167,
+    "platforms": 3,
+    "zone": "SCR",
+    "division": "GNT",
+    "id": "st_021"
+  },
+  {
+    "code": "GTL",
+    "name": "Guntakal Jn",
+    "lat": 15.1667,
+    "lng": 77.3833,
+    "platforms": 6,
+    "zone": "SCR",
+    "division": "GTL",
+    "id": "st_022"
+  },
+  {
+    "code": "NED",
+    "name": "Hazur Sahib Nanded",
+    "lat": 19.15,
+    "lng": 77.3,
+    "platforms": 4,
+    "zone": "SCR",
+    "division": "NED",
+    "id": "st_023"
   }
 ]

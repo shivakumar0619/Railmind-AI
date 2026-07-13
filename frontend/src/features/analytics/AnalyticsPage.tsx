@@ -1,38 +1,32 @@
-import { useEffect, useState } from "react";
 import { Activity, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, AreaChart, Area
 } from "recharts";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 
 const PIE_COLORS = ["#22c55e", "#eab308", "#ef4444"];
 const SEVERITY_COLORS: Record<string, string> = { critical: "#ef4444", high: "#f97316", medium: "#eab308", low: "#3b82f6" };
 
 export default function AnalyticsPage() {
-  const [analytics, setAnalytics] = useState<any>(null);
+  const { data: analyticsData, isLoading } = useQuery({
+    queryKey: ["analytics"],
+    queryFn: async () => (await api.get("/api/dashboard/analytics")).data.data,
+    refetchInterval: 5000,
+  });
 
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        const res = await api.get("/api/dashboard/analytics");
-        setAnalytics(res.data.data);
-      } catch (e) {
-        console.error("Analytics fetch failed", e);
-      }
-    };
-    fetchAnalytics();
-    const int = setInterval(fetchAnalytics, 5000);
-    return () => clearInterval(int);
-  }, []);
+  const analytics = analyticsData;
 
-  if (!analytics) {
+  if (isLoading && !analytics) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
       </div>
     );
   }
+
+  if (!analytics) return null;
 
   return (
     <div className="space-y-6">

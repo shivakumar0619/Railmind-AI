@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Building2, Zap, Search, Hash, Type, Layers, Map, Activity, ShieldCheck, Inbox } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/api";
 
 interface Station {
   id: string;
@@ -18,12 +20,13 @@ interface Station {
 }
 
 export default function StationsPage() {
-  const [stations, setStations] = useState<Station[]>([]);
-  const [search, setSearch] = useState("");
+  const { data: stationsData, isLoading } = useQuery({
+    queryKey: ["stations"],
+    queryFn: async () => (await api.get("/api/stations")).data.data,
+    refetchInterval: 10000,
+  });
 
-  useEffect(() => {
-    fetch("/api/stations").then(r => r.json()).then(d => setStations(d.data));
-  }, []);
+  const stations = stationsData || [];
 
   const filteredStations = stations.filter(s => 
     s.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -48,6 +51,12 @@ export default function StationsPage() {
           />
         </div>
       </div>
+
+      {isLoading && !stationsData ? (
+        <div className="flex justify-center p-12">
+          <Activity className="h-8 w-8 animate-pulse text-accent" />
+        </div>
+      ) : (
 
       <div className="rounded-xl border border-white/10 bg-black/20 backdrop-blur-md overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
@@ -124,6 +133,7 @@ export default function StationsPage() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

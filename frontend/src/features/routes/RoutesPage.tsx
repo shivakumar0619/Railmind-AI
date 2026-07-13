@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 import { Route as RouteIcon, Zap, Gauge, Hash, Map, Train, Activity, ShieldCheck, Inbox } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../lib/api";
 
 interface RouteData {
   id: string;
@@ -17,11 +18,13 @@ interface RouteData {
 }
 
 export default function RoutesPage() {
-  const [routes, setRoutes] = useState<RouteData[]>([]);
+  const { data: routesData, isLoading } = useQuery({
+    queryKey: ["routes"],
+    queryFn: async () => (await api.get("/api/routes")).data.data,
+    refetchInterval: 10000,
+  });
 
-  useEffect(() => {
-    fetch("/api/routes").then(r => r.json()).then(d => setRoutes(d.data));
-  }, []);
+  const routes = routesData || [];
 
   return (
     <div className="space-y-6">
@@ -30,6 +33,11 @@ export default function RoutesPage() {
         <p className="mt-1 text-sm text-text-secondary">Railway corridor routes and sections</p>
       </div>
 
+      {isLoading && !routesData ? (
+        <div className="flex justify-center p-12">
+          <Activity className="h-8 w-8 animate-pulse text-accent" />
+        </div>
+      ) : (
       <div className="rounded-xl border border-white/10 bg-black/20 backdrop-blur-md overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -114,6 +122,7 @@ export default function RoutesPage() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }
