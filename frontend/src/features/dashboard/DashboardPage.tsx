@@ -328,7 +328,7 @@ function DashboardContent() {
               ))}
               <div className="text-[11px] p-1.5 border-l-2 border-status-info bg-bg-base">
                 <div className="font-bold text-text-primary">Weather Status</div>
-                <div className="text-text-muted mt-0.5">{weather?.global_status || 'Clear'}</div>
+                <div className="text-text-muted mt-0.5">Clear</div>
               </div>
             </div>
           </div>

@@ -127,14 +127,14 @@ export default function SignalsPage() {
                           <span className="text-[10px] text-text-muted font-mono bg-white/5 px-1.5 py-0.5 rounded">{signal.id.slice(0, 8)}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-text-secondary capitalize">{signal.type.replace("_", " ")}</td>
+                      <td className="px-4 py-3 text-text-secondary capitalize">{(signal.type || "unknown").replace("_", " ")}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="relative flex h-3 w-3 items-center justify-center">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-40" style={{ backgroundColor: ASPECT_COLORS[signal.aspect.toLowerCase()] || "#71717a" }}></span>
-                            <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: ASPECT_COLORS[signal.aspect.toLowerCase()] || "#71717a" }}></span>
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-40" style={{ backgroundColor: ASPECT_COLORS[(signal.aspect || "clear").toLowerCase()] || "#71717a" }}></span>
+                            <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: ASPECT_COLORS[(signal.aspect || "clear").toLowerCase()] || "#71717a" }}></span>
                           </div>
-                          <span className="capitalize text-xs font-medium" style={{ color: ASPECT_COLORS[signal.aspect.toLowerCase()] || "#71717a" }}>{signal.aspect}</span>
+                          <span className="capitalize text-xs font-medium" style={{ color: ASPECT_COLORS[(signal.aspect || "clear").toLowerCase()] || "#71717a" }}>{signal.aspect || "clear"}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
