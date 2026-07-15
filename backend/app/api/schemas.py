@@ -18,6 +18,7 @@ class Train(BaseModel):
     current_route_id: str = ""
     current_speed_kmh: float = 0.0
     delay_minutes: int = 0
+    travel_track: str = "single"
     progress_pct: float = 0.0
     bearing: float = 0.0
     lat: float = 0.0
@@ -30,8 +31,11 @@ class Train(BaseModel):
     division: str = "Secunderabad"
 
 class Block(BaseModel):
-    index: int
-    status: str = "clear"
+    route_id: str
+    track: str = "single"
+    block_index: int
+    aspect: str = "clear"
+    occupancy: bool = False
     polyline: List[List[float]] = []
 
 class Route(BaseModel):
@@ -42,6 +46,8 @@ class Route(BaseModel):
     target_code: str = ""
     corridor: str = "Branch"
     line_type: str = "single"
+    track_count: int = 1
+    tracks: List[str] = ["single"]
     electrified: bool = True
     distance_km: float = 0.0
     stations_count: int = 0
@@ -71,6 +77,7 @@ class Signal(BaseModel):
     id: str
     name: str
     route_id: str
+    track: str = "single"
     block_index: int = 0
     block_id: str = ""
     lat: float = 0.0

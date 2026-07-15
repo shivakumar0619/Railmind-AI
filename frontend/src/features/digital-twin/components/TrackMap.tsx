@@ -19,16 +19,16 @@ export default function TrackMap({ stations, routes, signals, trains }: TrackMap
       blocks.forEach((block: any) => {
         if (block.polyline && block.polyline.length > 0) {
           features.push({
-            type: "Feature",
-            properties: {
-              id: `${route.id}-B${block.index}`,
-              corridor: route.corridor || "Branch",
-              status: block.status || "clear"
-            },
+            type: 'Feature',
             geometry: {
-              type: "LineString",
-              coordinates: block.polyline
-            }
+              type: 'LineString',
+              coordinates: block.polyline,
+            },
+            properties: {
+              id: `${route.id}:${block.track || 'single'}:${block.block_index}`,
+              corridor: route.corridor || "Branch",
+              status: block.aspect || "clear",
+            },
           });
         }
       });

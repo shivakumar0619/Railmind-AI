@@ -15,6 +15,7 @@ The simulation never enters an empty state.
 import asyncio
 import json
 import math
+import random
 
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,7 +28,7 @@ logger = get_logger(__name__)
 MOCK_DATA_DIR = Path(__file__).parent.parent / "mock_data"
 
 JsonDict = dict[str, Any]
-OccupancyMap = dict[tuple[str, int], list[str]]
+OccupancyMap = dict[tuple[str, str, int], list[str]]
 
 # ---------------------------------------------------------------------------
 # Lifecycle constants
@@ -141,6 +142,36 @@ class SimulationEngine:
     # Static state initialization
     # ------------------------------------------------------------------
 
+    def _offset_polyline(self, polyline: list[list[float]], offset: float) -> list[list[float]]:
+        if len(polyline) < 2:
+            return polyline
+        new_poly = []
+        n = len(polyline)
+        for i in range(n):
+            if i == 0:
+                dx = polyline[1][0] - polyline[0][0]
+                dy = polyline[1][1] - polyline[0][1]
+            elif i == n - 1:
+                dx = polyline[i][0] - polyline[i-1][0]
+                dy = polyline[i][1] - polyline[i-1][1]
+            else:
+                dx = polyline[i+1][0] - polyline[i-1][0]
+                dy = polyline[i+1][1] - polyline[i-1][1]
+                
+            length = math.hypot(dx, dy)
+            if length == 0:
+                nx, ny = 0, 0
+            else:
+                nx, ny = -dy / length, dx / length
+                
+            factor = 0.0 if i == 0 or i == n - 1 else (0.5 if i == 1 or i == n - 2 else 1.0)
+                
+            new_poly.append([
+                round(polyline[i][0] + nx * offset * factor, 6),
+                round(polyline[i][1] + ny * offset * factor, 6)
+            ])
+        return new_poly
+
     def _normalise_static_state(self) -> None:
         """Derive static geometry and missing signal records from topology."""
         stations = self._stations_by_code()
@@ -164,6 +195,16 @@ class SimulationEngine:
             route.setdefault("average_delay_minutes", 0)
             route.setdefault("travel_time_minutes", self._route_travel_time(route))
             route.setdefault("occupied", False)
+            
+            if route.get("line_type") == "double":
+                route["track_count"] = 2
+                route["tracks"] = ["up", "down"]
+                route["polyline_up"] = self._offset_polyline(route["polyline"], 0.00015)
+                route["polyline_down"] = self._offset_polyline(route["polyline"], -0.00015)
+            else:
+                route["track_count"] = 1
+                route["tracks"] = ["single"]
+                route["polyline_single"] = list(route["polyline"])
 
         self._ensure_signals()
 
@@ -171,7 +212,7 @@ class SimulationEngine:
         """Generate deterministic automatic block signals for every route."""
         routes = self._routes_by_id()
         existing = {
-            (signal.get("route_id"), int(signal.get("block_index", 0)))
+            (signal.get("route_id"), signal.get("track", "single"), int(signal.get("block_index", 0)))
             for signal in self.state.get("signals", [])
             if signal.get("route_id") in routes
         }
@@ -185,55 +226,77 @@ class SimulationEngine:
             block_count = max(1, int(route.get("block_count", 1)))
             source_code = route["source_code"]
             target_code = route["target_code"]
-            for block_index in range(block_count):
-                key = (route["id"], block_index)
-                if key in existing:
-                    continue
+            tracks = route.get("tracks", ["single"])
+            
+            for track in tracks:
+                for block_index in range(block_count):
+                    key = (route["id"], track, block_index)
+                    if key in existing:
+                        continue
 
-                progress_pct = ((block_index + 0.5) / block_count) * 100
-                position = self._position_on_route(route, progress_pct, "forward")
-                signal_type = "home" if block_index == 0 else "automatic"
-                if block_index == block_count - 1:
-                    signal_type = "advanced_starter"
+                    # For "down" tracks, the progress percentage should reverse physically if we want it mathematically
+                    # But the signal position is geometrically at the block boundary.
+                    # We can use the polyline for the track to find exact position.
+                    progress_pct = ((block_index + 0.5) / block_count) * 100
+                    # For a DOWN track, block 0 is near target_code, block N-1 is near source_code!
+                    # Actually, if we keep block 0 near source for both, we can just use progress_pct.
+                    if track == "down":
+                        # The signal protects the entry into the block.
+                        pass
+                    
+                    poly_key = f"polyline_{track}"
+                    poly = route.get(poly_key, route.get("polyline", []))
+                    
+                    # Compute signal coords
+                    if len(poly) > 1:
+                        p_index = min(block_index, len(poly) - 1)
+                        position = {"lat": poly[p_index][1], "lng": poly[p_index][0]}
+                    else:
+                        position = self._position_on_route(route, progress_pct, "forward")
+                        
+                    signal_type = "home" if block_index == 0 else "automatic"
+                    if block_index == block_count - 1:
+                        signal_type = "advanced_starter"
 
-                generated.append(
-                    {
-                        "id": f"sig_{route['code'].lower().replace('-', '_')}_{block_index + 1:02d}",
-                        "name": f"{source_code}-{target_code} {block_index + 1:02d}",
-                        "type": signal_type,
-                        "station_code": source_code,
-                        "route_id": route["id"],
-                        "block_id": f"{route['code']}-B{block_index + 1:02d}",
-                        "block_index": block_index,
-                        "total_blocks": block_count,
-                        "direction": f"{source_code}->{target_code}",
-                        "aspect": "clear",
-                        "status": "operational",
-                        "health": 100,
-                        "health_score": 100.0,
-                        "occupied": False,
-                        "failure": False,
-                        "maintenance": False,
-                        "lat": position["lat"],
-                        "lng": position["lng"],
-                        "data_source": "simulation",
-                    }
-                )
+                    generated.append(
+                        {
+                            "id": f"sig_{route['code'].lower().replace('-', '_')}_{track}_{block_index + 1:02d}",
+                            "name": f"{source_code}-{target_code} {track.upper()} {block_index + 1:02d}",
+                            "type": signal_type,
+                            "station_code": source_code if track != "down" else target_code,
+                            "route_id": route["id"],
+                            "track": track,
+                            "block_id": f"{route['code']}-{track.upper()}-B{block_index + 1:02d}",
+                            "block_index": block_index,
+                            "total_blocks": block_count,
+                            "direction": f"{source_code}->{target_code}" if track != "down" else f"{target_code}->{source_code}",
+                            "aspect": "clear",
+                            "status": "operational",
+                            "health": 100,
+                            "health_score": 100.0,
+                            "occupied": False,
+                            "failure": False,
+                            "maintenance": False,
+                            "lat": position["lat"],
+                            "lng": position["lng"],
+                            "data_source": "simulation",
+                        }
+                    )
 
         self.state["signals"] = sorted(
             generated,
-            key=lambda signal: (signal.get("route_id", ""), signal.get("block_index", 0)),
+            key=lambda signal: (signal.get("route_id", ""), signal.get("track", "single"), signal.get("block_index", 0)),
         )
 
     def _bootstrap_trains(self) -> None:
-        """Validate train paths and initialise lifecycle fields.
-
-        Trains whose paths reference routes that don't exist are
-        repaired by finding valid alternative paths through the network.
-        """
+        """Validate train paths and initialise lifecycle fields."""
         routes_by_id = self._routes_by_id()
 
         for train in self.state["trains"]:
+            if "travel_direction" in train:
+                train["travel_track"] = "up" if train["travel_direction"] == "forward" else "down"
+            train.setdefault("travel_track", "up")
+            
             # Validate path — remove any route IDs not in our topology
             original_path = train.get("path", [])
             valid_path = [r for r in original_path if r in routes_by_id]
@@ -243,7 +306,6 @@ class SimulationEngine:
                 valid_path = self._find_fallback_path(
                     train.get("origin", ""),
                     train.get("destination", ""),
-                    train.get("travel_direction", "forward"),
                 )
 
             if not valid_path:
@@ -277,7 +339,7 @@ class SimulationEngine:
                 train["lifecycle"] = "running"
                 train["progress_pct"] = 0
 
-    def _find_fallback_path(self, origin: str, destination: str, direction: str) -> list[str]:
+    def _find_fallback_path(self, origin: str, destination: str) -> list[str]:
         """Use a simple BFS to find a route path between two station codes."""
         routes = self.state["routes"]
         # Build adjacency from station codes to route IDs
@@ -371,8 +433,12 @@ class SimulationEngine:
         destination = train.get("destination")
         train["origin"] = destination
         train["destination"] = origin
-        current_direction = train.get("travel_direction", "forward")
-        train["travel_direction"] = "reverse" if current_direction == "forward" else "forward"
+        current_track = train.get("travel_track", "single")
+        if current_track == "up":
+            train["travel_track"] = "down"
+        elif current_track == "down":
+            train["travel_track"] = "up"
+        
         train["current_route_id"] = path[0] if path else train.get("current_route_id")
         train["path_index"] = 0
         train["progress_pct"] = 0
@@ -509,12 +575,13 @@ class SimulationEngine:
                 next_route = self._routes_by_id().get(path[path_index + 1])
                 if next_route:
                     next_occupancy = self._build_occupancy()
-                    if not self._is_block_available(next_occupancy, next_route["id"], 0, str(train["id"])):
+                    next_track = train.get("travel_track", "single") # Assuming same track continues
+                    if not self._is_block_available(next_occupancy, next_route["id"], next_track, 0, str(train["id"])):
                         return "caution"
             return "clear"
 
         for signal in self.state["signals"]:
-            if signal.get("route_id") == route["id"] and int(signal.get("block_index", -1)) == next_block:
+            if signal.get("route_id") == route["id"] and signal.get("track", "single") == train.get("travel_track", "single") and int(signal.get("block_index", -1)) == next_block:
                 return signal.get("aspect", "clear")
         return "clear"
 
@@ -525,58 +592,70 @@ class SimulationEngine:
         else: return max_speed
 
     def _update_signals(self, occupancy: OccupancyMap) -> None:
-        signal_lookup: dict[tuple[str, int], JsonDict] = {}
+        """Update ABS signal states based on track occupancy."""
+        # 1. Reset all signals
         for signal in self.state["signals"]:
-            route_id = signal.get("route_id")
-            block_index = int(signal.get("block_index", 0))
-            signal_lookup[(route_id, block_index)] = signal
-            signal["aspect"] = "clear"
             signal["occupied"] = False
-
-        # Apply failures (not random, just check flag)
-        for signal in self.state["signals"]:
+            
+            # Simulated failure handling
             if signal.get("failure"):
-                signal["aspect"] = "stop"
-                signal["status"] = "failed"
+                if random.random() < SIGNAL_RECOVERY_PROBABILITY:
+                    signal["failure"] = False
+                    signal["status"] = "operational"
+                    signal["health"] = min(100, int(signal.get("health", 0)) + int(100 * SIGNAL_HEALTH_RECOVERY))
+                else:
+                    signal["aspect"] = "stop"
+                    signal["health"] = max(0, int(signal.get("health", 0)) - int(100 * SIGNAL_HEALTH_DEGRADATION))
+                    continue
             else:
-                signal["status"] = "operational"
+                if random.random() < SIGNAL_FAILURE_PROBABILITY:
+                    signal["failure"] = True
+                    signal["aspect"] = "stop"
+                    continue
+                else:
+                    signal["aspect"] = "clear"
 
-        # Apply Occupancy ABS
-        for (route_id, block_index), train_ids in occupancy.items():
+        # Signal lookup cache
+        signal_lookup = {
+            (sig.get("route_id"), sig.get("track", "single"), int(sig.get("block_index", 0))): sig
+            for sig in self.state["signals"]
+        }
+
+        # Faulty hardware override
+        for sig_id in [s["id"] for s in self.state["signals"] if s.get("failure")]:
+            for s in self.state["signals"]:
+                if s["id"] == sig_id:
+                    s["aspect"] = "stop"
+                    s["status"] = "failed"
+            else:
+                pass # status managed in first loop
+
+        hierarchy = {"stop": 4, "caution": 3, "attention": 2, "clear": 1}
+
+        def set_aspect(r_id: str, track: str, b_idx: int, new_aspect: str) -> None:
+            sig = signal_lookup.get((r_id, track, b_idx))
+            if sig and not sig.get("failure"):
+                current = sig.get("aspect", "clear")
+                if hierarchy[new_aspect] > hierarchy[current]:
+                    sig["aspect"] = new_aspect
+
+        # Apply Occupancy ABS (strict priority)
+        for (route_id, track, block_index), train_ids in occupancy.items():
             if not train_ids:
                 continue
 
-            # Red
-            current_signal = signal_lookup.get((route_id, block_index))
+            current_signal = signal_lookup.get((route_id, track, block_index))
             if current_signal:
-                current_signal["aspect"] = "stop"
                 current_signal["occupied"] = True
 
-            # Yellow
-            prev_signal = signal_lookup.get((route_id, block_index - 1))
-            if prev_signal and prev_signal.get("aspect") not in {"stop"}:
-                prev_signal["aspect"] = "caution"
-
-            # Double Yellow
-            prev2_signal = signal_lookup.get((route_id, block_index - 2))
-            if prev2_signal and prev2_signal.get("aspect") == "clear":
-                prev2_signal["aspect"] = "attention"
-
-        # Maintenance restrictions
-        maintenance_routes = {task.get("location") for task in self.state.get("maintenance", [])}
-        for signal in self.state["signals"]:
-            signal["maintenance"] = signal.get("route_id") in maintenance_routes
-            if signal["maintenance"] and signal["aspect"] == "clear":
-                signal["aspect"] = "attention"
-
-        # Weather restrictions
-        weather_stations = self.state.get("weather", {}).get("stations", {})
-        for signal in self.state["signals"]:
-            station_code = signal.get("station_code")
-            station_weather = weather_stations.get(station_code, {})
-            speed_factor = float(station_weather.get("speed_factor", 1.0))
-            if speed_factor < 0.9 and signal["aspect"] == "clear":
-                signal["aspect"] = "attention"
+            # Strict ABS rules
+            set_aspect(route_id, track, block_index, "stop")
+            if track == "down":
+                set_aspect(route_id, track, block_index + 1, "caution")
+                set_aspect(route_id, track, block_index + 2, "attention")
+            else:
+                set_aspect(route_id, track, block_index - 1, "caution")
+                set_aspect(route_id, track, block_index - 2, "attention")
 
     def _verify_consistency(self, occupancy: OccupancyMap) -> None:
         # Validate every tick
@@ -591,10 +670,11 @@ class SimulationEngine:
             # occupied block contains train
             route_id = train.get("current_route_id")
             block_index = train.get("block_index", 0)
+            track = train.get("travel_track", "single")
             if route_id and status not in {"dwelling", "reversing", "at_station"}:
-                occ = occupancy.get((route_id, block_index), [])
+                occ = occupancy.get((route_id, track, block_index), [])
                 if train["id"] not in occ:
-                    logger.error(f"Consistency Error: Train {train['id']} not in occupancy for {route_id} B{block_index}")
+                    logger.error(f"Consistency Error: Train {train['id']} not in occupancy for {route_id} {track} B{block_index}")
                     
         for signal in self.state["signals"]:
             aspect = signal.get("aspect")
@@ -675,15 +755,15 @@ class SimulationEngine:
         if not route:
             return
 
-        travel_direction = train.get("travel_direction", "forward")
+        travel_track = train.get("travel_track", "single")
         progress_pct = max(0.0, min(100.0, float(train.get("progress_pct", 0))))
-        position = self._position_on_route(route, progress_pct, travel_direction)
-        current_code, next_code = self._route_display_endpoints(route, travel_direction)
+        position = self._position_on_route(route, progress_pct, travel_track)
+        current_code, next_code = self._route_display_endpoints(route, travel_track)
 
         train["progress_pct"] = round(progress_pct, 3)
         train["lat"] = position["lat"]
         train["lng"] = position["lng"]
-        train["bearing"] = self._route_bearing(route, travel_direction)
+        train["bearing"] = self._route_bearing(route, travel_track)
 
         # Station display
         if train.get("lifecycle") in {"dwelling", "reversing"} or train.get("status") == "at_station":
@@ -697,8 +777,11 @@ class SimulationEngine:
             train["next_station"] = next_code
 
         block_count = max(1, int(route.get("block_count", 1)))
-        train["block_index"] = self._block_index(progress_pct, block_count)
-        train["block_id"] = f"{route['code']}-B{train['block_index'] + 1:02d}"
+        train["block_index"] = self._block_index(progress_pct, block_count, travel_track)
+        
+        # Determine block ID format (e.g. SC-KZJ-UP-B01 or SC-NLDA-B01)
+        track_str = f"-{travel_track.upper()}" if travel_track in {"up", "down"} else ""
+        train["block_id"] = f"{route['code']}{track_str}-B{train['block_index'] + 1:02d}"
         train["section"] = route["code"]
         train["corridor"] = route.get("corridor")
 
@@ -713,7 +796,7 @@ class SimulationEngine:
             route_trains = trains_by_route.get(route["id"], [])
             delayed = [int(train.get("delay_minutes", 0)) for train in route_trains]
             occupied_blocks = [
-                block for (route_id, block), trains in occupancy.items() if route_id == route["id"] and trains
+                f"{track}-{block}" for (route_id, track, block), trains in occupancy.items() if route_id == route["id"] and trains
             ]
             route["current_trains"] = len(route_trains)
             route["occupied"] = bool(occupied_blocks)
@@ -722,25 +805,32 @@ class SimulationEngine:
             route["travel_time_minutes"] = self._route_travel_time(route)
 
             block_count = max(1, int(route.get("block_count", 1)))
+            tracks = route.get("tracks", ["single"])
             
             blocks = []
-            for i in range(block_count):
-                status = "clear"
-                for sig in self.state["signals"]:
-                    if sig.get("route_id") == route["id"] and int(sig.get("block_index", 0)) == i:
-                        status = sig.get("aspect", "clear")
-                        break
+            for track in tracks:
+                poly_key = f"polyline_{track}"
+                poly = route.get(poly_key, route.get("polyline", []))
                 
-                poly = route.get("polyline", [])
-                p1 = poly[i] if i < len(poly) else [0,0]
-                p2 = poly[i+1] if (i+1) < len(poly) else (poly[-1] if poly else [0,0])
-                blocks.append({
-                    "index": i,
-                    "status": status,
-                    "polyline": [p1, p2]
-                })
+                for i in range(block_count):
+                    status = "clear"
+                    for sig in self.state["signals"]:
+                        if sig.get("route_id") == route["id"] and sig.get("track", "single") == track and int(sig.get("block_index", 0)) == i:
+                            status = sig.get("aspect", "clear")
+                            break
+                    
+                    p1 = poly[i] if i < len(poly) else [0,0]
+                    p2 = poly[i+1] if (i+1) < len(poly) else (poly[-1] if poly else [0,0])
+                    blocks.append({
+                        "route_id": route["id"],
+                        "track": track,
+                        "block_index": i,
+                        "aspect": status,
+                        "occupancy": f"{track}-{i}" in occupied_blocks,
+                        "polyline": [p1, p2]
+                    })
             route["blocks"] = blocks
-            load = len(occupied_blocks) / block_count
+            load = len(occupied_blocks) / (block_count * len(tracks))
             if load >= 0.5 or route["current_trains"] >= 3:
                 route["congestion"] = "high"
             elif load >= 0.25 or route["current_trains"] == 2:
@@ -1061,8 +1151,11 @@ class SimulationEngine:
                 continue
 
             block_count = max(1, int(route.get("block_count", 1)))
-            block_index = self._block_index(float(train.get("progress_pct", 0)), block_count)
-            occupancy.setdefault((route["id"], block_index), []).append(str(train["id"]))
+            track = train.get("travel_track", "single")
+            block_index = self._block_index(float(train.get("progress_pct", 0)), block_count, track)
+
+            key = (route["id"], track, block_index)
+            occupancy.setdefault(key, []).append(str(train["id"]))
 
         return occupancy
 
@@ -1070,11 +1163,12 @@ class SimulationEngine:
         self,
         occupancy: OccupancyMap,
         route_id: str,
+        track: str,
         block_index: int,
-        train_id: str,
+        exclude_train_id: str = "",
     ) -> bool:
-        occupying_trains = occupancy.get((route_id, block_index), [])
-        return not [occupant for occupant in occupying_trains if occupant != train_id]
+        occupying_trains = occupancy.get((route_id, track, block_index), [])
+        return not [occupant for occupant in occupying_trains if occupant != exclude_train_id]
 
     # ------------------------------------------------------------------
     # Helpers
@@ -1108,9 +1202,10 @@ class SimulationEngine:
         self,
         route: JsonDict,
         progress_pct: float,
-        travel_direction: str,
+        travel_track: str,
     ) -> dict[str, float]:
-        polyline = route.get("polyline")
+        poly_key = f"polyline_{travel_track}"
+        polyline = route.get(poly_key, route.get("polyline", []))
         if not polyline or len(polyline) < 2:
             stations = self._stations_by_code()
             source = stations.get(route["source_code"])
@@ -1120,7 +1215,7 @@ class SimulationEngine:
             polyline = [[source["lng"], source["lat"]], [target["lng"], target["lat"]]]
 
         ratio = max(0.0, min(1.0, progress_pct / 100))
-        if travel_direction == "reverse":
+        if travel_track == "down":
             ratio = 1 - ratio
 
         # Find the segment in the polyline
@@ -1136,13 +1231,14 @@ class SimulationEngine:
 
         return {"lat": round(lat, 6), "lng": round(lng, 6)}
 
-    def _route_display_endpoints(self, route: JsonDict, travel_direction: str) -> tuple[str, str]:
-        if travel_direction == "reverse":
+    def _route_display_endpoints(self, route: JsonDict, travel_track: str) -> tuple[str, str]:
+        if travel_track == "down":
             return str(route["target_code"]), str(route["source_code"])
         return str(route["source_code"]), str(route["target_code"])
 
-    def _route_bearing(self, route: JsonDict, travel_direction: str) -> float:
-        polyline = route.get("polyline")
+    def _route_bearing(self, route: JsonDict, travel_track: str) -> float:
+        poly_key = f"polyline_{travel_track}"
+        polyline = route.get(poly_key, route.get("polyline", []))
         if not polyline or len(polyline) < 2:
             stations = self._stations_by_code()
             source = stations.get(route["source_code"])
@@ -1155,7 +1251,7 @@ class SimulationEngine:
             p0 = polyline[0]
             p1 = polyline[-1]
 
-        if travel_direction == "reverse":
+        if travel_track == "down":
             p0, p1 = p1, p0
 
         lat_delta = p1[1] - p0[1]
@@ -1163,10 +1259,11 @@ class SimulationEngine:
         bearing = math.degrees(math.atan2(lng_delta, lat_delta))
         return round((bearing + 360) % 360, 1)
 
-    def _block_index(self, progress_pct: float, block_count: int) -> int:
-        if progress_pct >= 100:
-            return block_count - 1
-        return max(0, min(block_count - 1, int((progress_pct / 100) * block_count)))
+    def _block_index(self, progress_pct: float, block_count: int, track: str = "up") -> int:
+        ratio = max(0.0, min(1.0, progress_pct / 100))
+        if track == "down":
+            ratio = 1.0 - ratio
+        return min(int(ratio * block_count), block_count - 1)
 
     def _route_travel_time(self, route: JsonDict) -> int:
         speed = max(1, float(route.get("max_speed_kmh", 100)))
