@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Train as TrainIcon, Clock, Gauge, MapPin, Activity, Inbox, Hash, Zap } from "lucide-react";
+import { Train as TrainIcon, Clock, Gauge, MapPin, Activity, Inbox, Hash } from "lucide-react";
 import { api } from "../../lib/api";
+import FilterBar, { FilterConfig } from "../../components/shared/FilterBar";
 
 interface TrainData {
   id: string;
@@ -18,12 +20,18 @@ interface TrainData {
 
 const STATUS_STYLES: Record<string, { label: string; color: string; bg: string; border: string }> = {
   running: { label: "Running", color: "text-status-success", bg: "bg-status-success-muted/20", border: "border-status-success/30" },
-  waiting: { label: "Waiting", color: "text-status-danger", bg: "bg-status-danger-muted/20", border: "border-status-danger/30" },
-  at_station: { label: "Dwelling", color: "text-status-info", bg: "bg-status-info-muted/20", border: "border-status-info/30" },
+  approaching: { label: "Approaching", color: "text-status-success", bg: "bg-status-success-muted/20", border: "border-status-success/30" },
+  braking: { label: "Braking", color: "text-status-warning", bg: "bg-status-warning-muted/20", border: "border-status-warning/30" },
+  stopped: { label: "Stopped", color: "text-status-danger", bg: "bg-status-danger-muted/20", border: "border-status-danger/30" },
+  dwelling: { label: "Dwelling", color: "text-status-info", bg: "bg-status-info-muted/20", border: "border-status-info/30" },
+  departing: { label: "Departing", color: "text-status-info", bg: "bg-status-info-muted/20", border: "border-status-info/30" },
+  reversing: { label: "Reversing", color: "text-status-warning", bg: "bg-status-warning-muted/20", border: "border-status-warning/30" },
   completed: { label: "Terminated", color: "text-text-muted", bg: "bg-bg-surface-hover", border: "border-border-primary" },
 };
 
 export default function TrainsPage() {
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
   const { data: trainsData, isLoading } = useQuery({
     queryKey: ["trains"],
     queryFn: async () => (await api.get("/api/trains")).data.data,
@@ -31,6 +39,48 @@ export default function TrainsPage() {
   });
 
   const trains = trainsData || [];
+
+  const filterConfigs: FilterConfig[] = [
+    { id: "search", label: "Train", type: "search", placeholder: "Search No. or Name" },
+    { id: "type", label: "Type", type: "select", options: [
+      { label: "Vande Bharat", value: "vande_bharat" },
+      { label: "Rajdhani", value: "rajdhani" },
+      { label: "Duronto", value: "duronto" },
+      { label: "Superfast", value: "superfast" },
+      { label: "Mail Express", value: "mail_express" },
+      { label: "Passenger", value: "passenger" },
+      { label: "Freight", value: "freight" },
+    ]},
+    { id: "priority", label: "Priority", type: "select", options: [
+      { label: "High", value: "high" },
+      { label: "Medium", value: "medium" },
+      { label: "Low", value: "low" },
+    ]},
+    { id: "status", label: "Status", type: "select", options: [
+      { label: "Running", value: "running" },
+      { label: "Approaching", value: "approaching" },
+      { label: "Braking", value: "braking" },
+      { label: "Stopped", value: "stopped" },
+      { label: "Dwelling", value: "dwelling" },
+      { label: "Departing", value: "departing" },
+      { label: "Reversing", value: "reversing" },
+      { label: "Terminated", value: "completed" },
+    ]},
+    { id: "origin", label: "Origin", type: "search", placeholder: "Origin Code" },
+    { id: "destination", label: "Destination", type: "search", placeholder: "Destination Code" },
+    { id: "delayed", label: "Delayed Only", type: "boolean" }
+  ];
+
+  const filteredTrains = trains.filter((t: any) => {
+    if (filters.search && !t.name.toLowerCase().includes(filters.search.toLowerCase()) && !t.number.includes(filters.search)) return false;
+    if (filters.type && (t.type || 'unknown') !== filters.type) return false;
+    if (filters.status && t.status !== filters.status) return false;
+    if (filters.priority && t.priority !== filters.priority) return false;
+    if (filters.origin && !t.origin?.toLowerCase().includes(filters.origin.toLowerCase())) return false;
+    if (filters.destination && !t.destination?.toLowerCase().includes(filters.destination.toLowerCase())) return false;
+    if (filters.delayed && t.delay_minutes <= 0) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -41,9 +91,11 @@ export default function TrainsPage() {
         </div>
         <div className="flex items-center gap-2 rounded-lg bg-accent/10 border border-accent/20 px-3 py-1.5">
           <TrainIcon className="h-4 w-4 text-accent" />
-          <span className="text-sm font-bold text-accent">{trains.filter((t: any) => t.status !== "completed").length} Active</span>
+          <span className="text-sm font-bold text-accent">{filteredTrains.length} Active</span>
         </div>
       </div>
+      
+      <FilterBar configs={filterConfigs} onFilterChange={setFilters} />
 
       {isLoading && !trainsData ? (
         <div className="flex justify-center p-12">
@@ -74,7 +126,7 @@ export default function TrainsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {trains.length === 0 ? (
+              {filteredTrains.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-text-muted">
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -84,7 +136,7 @@ export default function TrainsPage() {
                   </td>
                 </tr>
               ) : (
-                trains.map((train: TrainData) => {
+                filteredTrains.map((train: TrainData) => {
                   const s = STATUS_STYLES[train.status] || STATUS_STYLES.completed;
                   return (
                     <tr key={train.id} className="group transition-colors hover:bg-white/5">
@@ -93,14 +145,14 @@ export default function TrainsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="font-medium text-text-primary">{train.name}</div>
-                        <div className="text-[10px] text-text-muted uppercase mt-0.5">{train.type.replace("_", " ")}</div>
+                        <div className="text-[10px] text-text-muted uppercase mt-0.5">{(train.type || 'unknown').replace("_", " ")}</div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1.5">
                           <span className="font-mono text-sm text-text-secondary">{Math.round(train.current_speed_kmh || 0)} km/h</span>
                           <div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/10">
                             <div 
-                              className={`h-full rounded-full ${train.status === 'waiting' ? 'bg-status-danger' : 'bg-accent'}`} 
+                              className={`h-full rounded-full ${train.status === 'stopped' ? 'bg-status-danger' : 'bg-accent'}`} 
                               style={{ width: `${Math.min(100, train.progress_pct || 0)}%` }}
                             />
                           </div>

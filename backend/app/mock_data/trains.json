@@ -42,7 +42,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0002",
@@ -79,7 +83,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0003",
@@ -124,7 +132,11 @@
     "priority": 1,
     "delay_minutes": 10,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0004",
@@ -161,7 +173,11 @@
     "priority": 1,
     "delay_minutes": 13,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0005",
@@ -196,7 +212,11 @@
     "priority": 1,
     "delay_minutes": 1,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0006",
@@ -233,7 +253,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0007",
@@ -278,7 +302,11 @@
     "priority": 1,
     "delay_minutes": 1,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0008",
@@ -313,7 +341,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0009",
@@ -348,7 +380,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0010",
@@ -385,7 +421,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "vande_bharat",
+    "category": "Vande Bharat",
+    "max_speed": 130,
+    "icon_type": "vande_bharat"
   },
   {
     "id": "trn_0011",
@@ -412,7 +452,11 @@
     "priority": 1,
     "delay_minutes": 15,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0012",
@@ -447,7 +491,11 @@
     "priority": 1,
     "delay_minutes": 2,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0013",
@@ -484,7 +532,11 @@
     "priority": 1,
     "delay_minutes": 6,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0014",
@@ -511,7 +563,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0015",
@@ -548,7 +604,11 @@
     "priority": 1,
     "delay_minutes": 11,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0016",
@@ -575,7 +635,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0017",
@@ -610,7 +674,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0018",
@@ -645,7 +713,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0019",
@@ -680,7 +752,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0020",
@@ -715,7 +791,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "rajdhani",
+    "category": "Rajdhani",
+    "max_speed": 130,
+    "icon_type": "rajdhani"
   },
   {
     "id": "trn_0021",
@@ -752,7 +832,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0022",
@@ -797,7 +881,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0023",
@@ -834,7 +922,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0024",
@@ -879,7 +971,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0025",
@@ -906,7 +1002,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0026",
@@ -943,7 +1043,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0027",
@@ -980,7 +1084,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0028",
@@ -1007,7 +1115,11 @@
     "priority": 1,
     "delay_minutes": 5,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0029",
@@ -1034,7 +1146,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0030",
@@ -1071,7 +1187,11 @@
     "priority": 1,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "duronto",
+    "category": "Express",
+    "max_speed": 130,
+    "icon_type": "express"
   },
   {
     "id": "trn_0031",
@@ -1106,7 +1226,11 @@
     "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0032",
@@ -1143,7 +1267,11 @@
     "priority": 2,
     "delay_minutes": 8,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0033",
@@ -1180,7 +1308,11 @@
     "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0034",
@@ -1217,7 +1349,11 @@
     "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0035",
@@ -1254,7 +1390,11 @@
     "priority": 2,
     "delay_minutes": 11,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0036",
@@ -1291,7 +1431,11 @@
     "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0037",
@@ -1328,7 +1472,11 @@
     "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0038",
@@ -1355,7 +1503,11 @@
     "priority": 2,
     "delay_minutes": 7,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0039",
@@ -1392,7 +1544,11 @@
     "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0040",
@@ -1429,7 +1585,11 @@
     "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "superfast",
+    "category": "Superfast",
+    "max_speed": 120,
+    "icon_type": "express"
   },
   {
     "id": "trn_0041",
@@ -1471,10 +1631,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 88.77789516975155,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0042",
@@ -1516,10 +1680,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 92.14027140563273,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 14,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0043",
@@ -1553,10 +1721,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 98.8075388840207,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0044",
@@ -1590,10 +1762,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 96.02237162233196,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0045",
@@ -1625,10 +1801,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 80.70209263996175,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0046",
@@ -1670,10 +1850,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 98.61743336319846,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0047",
@@ -1707,10 +1891,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 95.09119356099492,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0048",
@@ -1744,10 +1932,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 95.34914495836018,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 3,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0049",
@@ -1779,10 +1971,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 92.26108089008727,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0050",
@@ -1816,10 +2012,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 93.77023213457846,
     "max_speed_kmh": 110,
-    "priority": 3,
+    "priority": 2,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "mail_express",
+    "category": "Express",
+    "max_speed": 110,
+    "icon_type": "express"
   },
   {
     "id": "trn_0051",
@@ -1851,10 +2051,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 80.6196774445075,
     "max_speed_kmh": 90,
-    "priority": 4,
+    "priority": 3,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "memu",
+    "category": "Commuter",
+    "max_speed": 100,
+    "icon_type": "memu"
   },
   {
     "id": "trn_0052",
@@ -1896,10 +2100,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 65.47862923681936,
     "max_speed_kmh": 90,
-    "priority": 4,
+    "priority": 3,
     "delay_minutes": 2,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "memu",
+    "category": "Commuter",
+    "max_speed": 100,
+    "icon_type": "memu"
   },
   {
     "id": "trn_0053",
@@ -1933,10 +2141,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 78.72102945811633,
     "max_speed_kmh": 90,
-    "priority": 4,
+    "priority": 3,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "memu",
+    "category": "Commuter",
+    "max_speed": 100,
+    "icon_type": "memu"
   },
   {
     "id": "trn_0054",
@@ -1970,10 +2182,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 80.98523086623477,
     "max_speed_kmh": 90,
-    "priority": 4,
+    "priority": 3,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "memu",
+    "category": "Commuter",
+    "max_speed": 100,
+    "icon_type": "memu"
   },
   {
     "id": "trn_0055",
@@ -1997,10 +2213,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 69.1749659000909,
     "max_speed_kmh": 90,
-    "priority": 4,
+    "priority": 3,
     "delay_minutes": 13,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "memu",
+    "category": "Commuter",
+    "max_speed": 100,
+    "icon_type": "memu"
   },
   {
     "id": "trn_0056",
@@ -2024,10 +2244,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 58.87763216308529,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0057",
@@ -2051,10 +2275,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 67.26437533407119,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0058",
@@ -2096,10 +2324,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 61.78734130314113,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0059",
@@ -2141,10 +2373,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 61.82107295265579,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0060",
@@ -2176,10 +2412,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 61.386699211804014,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0061",
@@ -2203,10 +2443,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 57.49896318857756,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0062",
@@ -2248,10 +2492,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 62.80926431386442,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0063",
@@ -2275,10 +2523,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 57.28048018518692,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0064",
@@ -2312,10 +2564,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 64.73249452568484,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0065",
@@ -2349,10 +2605,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 57.678115541111,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0066",
@@ -2394,10 +2654,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 64.25268119753434,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0067",
@@ -2431,10 +2695,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 56.59607520064596,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0068",
@@ -2476,10 +2744,14 @@
     "travel_direction": "forward",
     "current_speed_kmh": 57.56997021368444,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0069",
@@ -2521,10 +2793,14 @@
     "travel_direction": "reverse",
     "current_speed_kmh": 53.995034899267544,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   },
   {
     "id": "trn_0070",
@@ -2558,9 +2834,13 @@
     "travel_direction": "forward",
     "current_speed_kmh": 66.02432841582949,
     "max_speed_kmh": 75,
-    "priority": 5,
+    "priority": 4,
     "delay_minutes": 0,
     "trips_completed": 0,
-    "_at_terminal": false
+    "_at_terminal": false,
+    "type": "freight",
+    "category": "Freight",
+    "max_speed": 75,
+    "icon_type": "freight"
   }
 ]

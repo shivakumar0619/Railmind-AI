@@ -5,11 +5,16 @@ from app.services.routing_service import routing_service
 
 router = APIRouter(tags=["Routes"])
 
+from typing import List
+from app.api.schemas import Route
+
 @router.get("")
 def get_routes():
+    raw_data = simulation_engine.state.get("routes", [])
+    valid_data = [Route(**item).model_dump() for item in raw_data]
     return {
-        "data": simulation_engine.state.get("routes", []),
-        "meta": {"total": len(simulation_engine.state.get("routes", []))},
+        "data": valid_data,
+        "meta": {"total": len(valid_data)},
         "errors": None
     }
 

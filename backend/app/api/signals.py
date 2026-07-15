@@ -3,11 +3,16 @@ from app.services.simulation import simulation_engine
 
 router = APIRouter(tags=["Signals"])
 
+from typing import List
+from app.api.schemas import Signal
+
 @router.get("")
 def get_signals():
+    raw_data = simulation_engine.state.get("signals", [])
+    valid_data = [Signal(**item).model_dump() for item in raw_data]
     return {
-        "data": simulation_engine.state.get("signals", []),
-        "meta": {"total": len(simulation_engine.state.get("signals", []))},
+        "data": valid_data,
+        "meta": {"total": len(valid_data)},
         "errors": None
     }
 

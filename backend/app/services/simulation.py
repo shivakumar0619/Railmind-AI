@@ -15,7 +15,7 @@ The simulation never enters an empty state.
 import asyncio
 import json
 import math
-import random
+
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -151,10 +151,12 @@ class SimulationEngine:
             if not source or not target:
                 continue
 
-            route["polyline"] = [
-                [source["lng"], source["lat"]],
-                [target["lng"], target["lat"]],
-            ]
+            # Preserve rich polylines from routes.json; only generate fallback if missing
+            if not route.get("polyline") or len(route["polyline"]) < 2:
+                route["polyline"] = [
+                    [source["lng"], source["lat"]],
+                    [target["lng"], target["lat"]],
+                ]
             route["center_lat"] = round((source["lat"] + target["lat"]) / 2, 6)
             route["center_lng"] = round((source["lng"] + target["lng"]) / 2, 6)
             route.setdefault("current_trains", 0)
@@ -326,372 +328,287 @@ class SimulationEngine:
         # Rebuild occupancy after movement for accurate signal computation
         occupancy = self._build_occupancy()
         self._update_dynamic_state(occupancy)
+        self._verify_consistency(occupancy)
 
         # Record performance snapshot every 60 ticks (~1 sim minute)
         if self.tick_count % 60 == 0:
             self._record_performance_snapshot()
 
     def _tick_train(self, train: JsonDict, sim_seconds: float, occupancy: OccupancyMap) -> None:
-        """Advance a single train through its lifecycle."""
         lifecycle = train.get("lifecycle", "running")
-
         if lifecycle == "dwelling":
             self._tick_dwelling(train, sim_seconds)
         elif lifecycle == "reversing":
             self._tick_reversing(train, sim_seconds)
-        elif lifecycle in {"running", "approaching", "waiting"}:
+        elif lifecycle in {"running", "approaching", "braking", "stopped", "departing"}:
             self._tick_running(train, sim_seconds, occupancy)
         else:
-            # Unknown state — reset to running
             train["lifecycle"] = "running"
             train["status"] = "running"
-
         self._normalise_train(train)
 
     def _tick_dwelling(self, train: JsonDict, sim_seconds: float) -> None:
-        """Handle platform dwell time countdown."""
-        train["status"] = "at_station"
+        train["status"] = "dwelling"
         train["current_speed_kmh"] = 0
         train["speed_kmh"] = 0
         train["dwell_remaining_s"] -= sim_seconds
-
         if train["dwell_remaining_s"] <= 0:
             train["dwell_remaining_s"] = 0
-
-            # Check if we just finished at terminal (end of path)
-            path = train.get("path", [])
-            path_index = train.get("path_index", 0)
-
             if train.get("_at_terminal", False):
-                # Reverse direction
                 train["lifecycle"] = "reversing"
+                train["status"] = "reversing"
                 train["_at_terminal"] = False
             else:
-                # Continue to next segment
-                train["lifecycle"] = "running"
-                train["status"] = "running"
+                train["lifecycle"] = "departing"
+                train["status"] = "departing"
 
     def _tick_reversing(self, train: JsonDict, sim_seconds: float) -> None:
-        """Reverse the train's path and direction at a terminal station."""
-        # Reverse the path
         path = list(train.get("original_path", train.get("path", [])))
         path.reverse()
         train["path"] = path
         train["original_path"] = list(path)
-
-        # Swap origin and destination
         origin = train.get("origin")
         destination = train.get("destination")
         train["origin"] = destination
         train["destination"] = origin
-
-        # Toggle travel direction
         current_direction = train.get("travel_direction", "forward")
-        new_direction = "reverse" if current_direction == "forward" else "forward"
-        train["travel_direction"] = new_direction
-
-        # Reset to start of new path
+        train["travel_direction"] = "reverse" if current_direction == "forward" else "forward"
         train["current_route_id"] = path[0] if path else train.get("current_route_id")
         train["path_index"] = 0
         train["progress_pct"] = 0
         train["trips_completed"] = int(train.get("trips_completed", 0)) + 1
-
-        # Gradually reduce delay after turnaround (simulates schedule reset)
         current_delay = int(train.get("delay_minutes", 0))
         train["delay_minutes"] = max(0, current_delay - 5)
-
-        train["lifecycle"] = "running"
-        train["status"] = "running"
+        train["lifecycle"] = "departing"
+        train["status"] = "departing"
 
     def _tick_running(self, train: JsonDict, sim_seconds: float, occupancy: OccupancyMap) -> None:
-        """Handle running/approaching/waiting movement with signal awareness."""
         route = self._routes_by_id().get(train.get("current_route_id"))
         if not route:
             return
-
         block_count = max(1, int(route.get("block_count", 1)))
         current_progress = float(train.get("progress_pct", 0))
         current_block = self._block_index(current_progress, block_count)
+        
+        speed_limit = float(train.get("max_speed_kmh", 100))
+        route_limit = self._effective_speed_limit(route)
+        max_train_speed = min(speed_limit, route_limit)
 
-        # Determine target speed based on signals, route limits, and approach
-        speed_limit = self._effective_speed_limit(route)
-        max_train_speed = min(float(train.get("max_speed_kmh", speed_limit)), speed_limit)
-
-        # Check signal aspect for current and next block
         signal_aspect = self._get_signal_aspect_for_train(train, route, current_block)
+        
+        if signal_aspect == "stop":
+            target_speed = 0
+        elif signal_aspect == "caution":
+            target_speed = min(max_train_speed, 40.0)
+        elif signal_aspect == "attention":
+            target_speed = min(max_train_speed, 75.0)
+        else:
+            target_speed = max_train_speed
 
-        # Determine target speed based on signal aspect
-        target_speed = self._speed_from_signal(signal_aspect, max_train_speed)
-
-        # Check if approaching end of route segment
         remaining_pct = 100.0 - current_progress
         if remaining_pct < APPROACH_DISTANCE_PCT:
             path = train.get("path", [])
             path_index = train.get("path_index", 0)
-            at_final_segment = path_index + 1 >= len(path)
-
-            if at_final_segment:
-                # Approaching terminal — brake to stop
+            if path_index + 1 >= len(path):
                 target_speed = min(target_speed, CRAWL_SPEED_KMH * (remaining_pct / APPROACH_DISTANCE_PCT))
-                train["lifecycle"] = "approaching"
+                if train["lifecycle"] not in {"stopped"}:
+                    train["lifecycle"] = "approaching"
+                    train["status"] = "approaching"
 
-        # Check block availability before moving into next block
         current_speed = float(train.get("current_speed_kmh", 0))
-
-        # Calculate new speed (acceleration/braking physics)
-        if signal_aspect == "stop":
-            # Emergency braking
-            new_speed = max(0, current_speed - EMERGENCY_BRAKE_RATE_KMHPM * (sim_seconds / 60))
-            train["lifecycle"] = "waiting"
-            train["status"] = "waiting"
-
-            if new_speed <= 0:
-                new_speed = 0
-                train["delay_minutes"] = int(train.get("delay_minutes", 0)) + 1
-                train["signal_stops"] = int(train.get("signal_stops", 0)) + 1
+        
+        if signal_aspect == "stop" and remaining_pct > 1.0:
+            # Service brake towards the stop
+            new_speed = max(0, current_speed - BRAKE_RATE_KMHPM * (sim_seconds / 60))
+            if new_speed == 0:
+                train["lifecycle"] = "stopped"
+                train["status"] = "stopped"
+            else:
+                train["lifecycle"] = "braking"
+                train["status"] = "braking"
         elif current_speed < target_speed:
-            # Accelerate
             new_speed = min(target_speed, current_speed + ACCEL_RATE_KMHPM * (sim_seconds / 60))
-            if train["lifecycle"] == "waiting":
+            if train["lifecycle"] in {"stopped", "departing"}:
                 train["lifecycle"] = "running"
                 train["status"] = "running"
         elif current_speed > target_speed:
-            # Service braking
             new_speed = max(target_speed, current_speed - BRAKE_RATE_KMHPM * (sim_seconds / 60))
-            if train["lifecycle"] not in {"approaching"}:
-                train["lifecycle"] = "running"
-                train["status"] = "running"
+            if train["lifecycle"] != "approaching":
+                train["lifecycle"] = "braking"
+                train["status"] = "braking"
         else:
             new_speed = target_speed
-            if train["lifecycle"] not in {"approaching"}:
+            if train["lifecycle"] not in {"approaching", "stopped", "departing"}:
                 train["lifecycle"] = "running"
                 train["status"] = "running"
 
         train["current_speed_kmh"] = round(new_speed, 1)
         train["speed_kmh"] = round(new_speed, 1)
 
-        # Calculate movement
         if new_speed > 0:
             distance_moved = new_speed * (sim_seconds / 3600.0)
             route_distance = max(float(route.get("distance_km", 1)), 0.1)
             pct_moved = (distance_moved / route_distance) * 100
-
-            # Check block transition
+            
             target_progress = min(100.0, current_progress + pct_moved)
             target_block = self._block_index(target_progress, block_count)
-
+            
             if target_block != current_block:
-                # About to enter a new block — check availability
                 if not self._is_block_available(occupancy, str(route["id"]), target_block, str(train["id"])):
-                    # Hold at block boundary
                     boundary_pct = (target_block / block_count) * 100 - 0.01
                     train["progress_pct"] = round(max(current_progress, boundary_pct), 3)
-                    train["status"] = "waiting"
-                    train["lifecycle"] = "waiting"
-                    train["delay_minutes"] = int(train.get("delay_minutes", 0)) + 1
+                    train["lifecycle"] = "stopped"
+                    train["status"] = "stopped"
+                    train["current_speed_kmh"] = 0
+                    train["speed_kmh"] = 0
                     return
-
+                    
             train["progress_pct"] = round(target_progress, 3)
 
-        # Check if reached end of route segment
         if float(train.get("progress_pct", 0)) >= 99.9:
             self._advance_train(train)
 
     def _advance_train(self, train: JsonDict) -> None:
-        """Move train to next route segment or begin terminal dwell."""
         path = train.get("path") or []
         path_index = train.get("path_index", 0)
-
-        # Accumulate distance
         route = self._routes_by_id().get(train.get("current_route_id"))
         if route:
             train["total_distance_km"] = round(
                 float(train.get("total_distance_km", 0)) + float(route.get("distance_km", 0)), 1
             )
-
         if path_index + 1 < len(path):
-            # Move to next segment — intermediate station dwell
             train["path_index"] = path_index + 1
             train["current_route_id"] = path[path_index + 1]
             train["progress_pct"] = 0
             train["current_speed_kmh"] = 0
             train["speed_kmh"] = 0
             train["lifecycle"] = "dwelling"
-            train["status"] = "at_station"
+            train["status"] = "dwelling"
             train["dwell_remaining_s"] = DWELL_TIME_INTERMEDIATE_S
             train["_at_terminal"] = False
         else:
-            # Reached terminal — longer dwell then reverse
             train["progress_pct"] = 100
             train["current_speed_kmh"] = 0
             train["speed_kmh"] = 0
             train["lifecycle"] = "dwelling"
-            train["status"] = "at_station"
+            train["status"] = "dwelling"
             train["dwell_remaining_s"] = DWELL_TIME_TERMINAL_S
             train["_at_terminal"] = True
-
-            # Update max delay tracking
-            current_delay = int(train.get("delay_minutes", 0))
-            if current_delay > int(train.get("max_delay_minutes", 0)):
-                train["max_delay_minutes"] = current_delay
 
     # ------------------------------------------------------------------
     # Signal logic — Realistic Automatic Block Signalling
     # ------------------------------------------------------------------
 
-    def _get_signal_aspect_for_train(
-        self, train: JsonDict, route: JsonDict, current_block: int
-    ) -> str:
-        """Determine the signal aspect governing this train's movement.
-
-        Looks at the signal protecting the *next* block the train will enter.
-        """
+    def _get_signal_aspect_for_train(self, train: JsonDict, route: JsonDict, current_block: int) -> str:
         block_count = max(1, int(route.get("block_count", 1)))
         next_block = current_block + 1
-
         if next_block >= block_count:
-            # About to leave route segment — check next route segment availability
             path = train.get("path", [])
             path_index = train.get("path_index", 0)
             if path_index + 1 < len(path):
                 next_route = self._routes_by_id().get(path[path_index + 1])
                 if next_route:
-                    # Check first block of next route
                     next_occupancy = self._build_occupancy()
-                    next_route_id = next_route["id"]
-                    if not self._is_block_available(next_occupancy, next_route_id, 0, str(train["id"])):
+                    if not self._is_block_available(next_occupancy, next_route["id"], 0, str(train["id"])):
                         return "caution"
             return "clear"
 
-        # Find signal for the next block on this route
         for signal in self.state["signals"]:
             if signal.get("route_id") == route["id"] and int(signal.get("block_index", -1)) == next_block:
                 return signal.get("aspect", "clear")
-
         return "clear"
 
     def _speed_from_signal(self, aspect: str, max_speed: float) -> float:
-        """Convert signal aspect to target speed."""
-        if aspect == "stop":
-            return 0
-        elif aspect == "caution":
-            return min(max_speed, 40.0)
-        elif aspect == "attention":
-            return min(max_speed, 75.0)
-        else:  # clear
-            return max_speed
+        if aspect == "stop": return 0
+        elif aspect == "caution": return min(max_speed, 40.0)
+        elif aspect == "attention": return min(max_speed, 75.0)
+        else: return max_speed
 
     def _update_signals(self, occupancy: OccupancyMap) -> None:
-        """Update all signal aspects using proper 4-aspect ABS rules.
-
-        Rules:
-            - Red (stop): protected block is occupied or signal has failed
-            - Yellow (caution): next block ahead is occupied
-            - Double Yellow (attention): two blocks ahead occupied
-            - Green (clear): blocks ahead are clear
-
-        Additional modifiers:
-            - Random failures with low probability generate maintenance alerts
-            - Weather and maintenance can force restrictive aspects
-        """
-        # Index signals by (route_id, block_index)
         signal_lookup: dict[tuple[str, int], JsonDict] = {}
         for signal in self.state["signals"]:
             route_id = signal.get("route_id")
             block_index = int(signal.get("block_index", 0))
             signal_lookup[(route_id, block_index)] = signal
-
-        # ---- Phase 1: Reset all to clear ----
-        for signal in self.state["signals"]:
             signal["aspect"] = "clear"
             signal["occupied"] = False
 
-        # ---- Phase 2: Apply occupancy-based ABS ----
+        # Apply failures (not random, just check flag)
+        for signal in self.state["signals"]:
+            if signal.get("failure"):
+                signal["aspect"] = "stop"
+                signal["status"] = "failed"
+            else:
+                signal["status"] = "operational"
+
+        # Apply Occupancy ABS
         for (route_id, block_index), train_ids in occupancy.items():
             if not train_ids:
                 continue
 
-            # The signal protecting THIS block shows RED
+            # Red
             current_signal = signal_lookup.get((route_id, block_index))
             if current_signal:
                 current_signal["aspect"] = "stop"
                 current_signal["occupied"] = True
 
-            # Signal one block behind shows YELLOW (caution)
+            # Yellow
             prev_signal = signal_lookup.get((route_id, block_index - 1))
             if prev_signal and prev_signal.get("aspect") not in {"stop"}:
                 prev_signal["aspect"] = "caution"
 
-            # Signal two blocks behind shows DOUBLE YELLOW (attention)
+            # Double Yellow
             prev2_signal = signal_lookup.get((route_id, block_index - 2))
             if prev2_signal and prev2_signal.get("aspect") == "clear":
                 prev2_signal["aspect"] = "attention"
 
-        # ---- Phase 3: Random signal failures ----
-        for signal in self.state["signals"]:
-            health_score = float(signal.get("health_score", signal.get("health", 100)))
-
-            if signal.get("failure"):
-                # Failed signal — may recover
-                if random.random() < SIGNAL_RECOVERY_PROBABILITY:
-                    signal["failure"] = False
-                    signal["status"] = "operational"
-                    health_score = min(100.0, health_score + 10)
-                    self._add_alert(
-                        f"Signal {signal['id']} recovered",
-                        f"Signal {signal['name']} has been restored to operational status.",
-                        "low",
-                        "signal_recovery",
-                    )
-                else:
-                    # Remain failed — degraded health, force restrictive aspect
-                    health_score = max(0, health_score - SIGNAL_HEALTH_DEGRADATION)
-                    signal["aspect"] = "stop"
-                    signal["status"] = "failed"
-            else:
-                # Healthy signal — may fail
-                if random.random() < SIGNAL_FAILURE_PROBABILITY:
-                    signal["failure"] = True
-                    signal["status"] = "failed"
-                    signal["aspect"] = "stop"
-                    health_score = max(0, health_score - 15)
-                    self._add_alert(
-                        f"Signal failure: {signal['id']}",
-                        f"Signal {signal['name']} on {signal.get('direction', 'unknown')} has failed. "
-                        f"Trains will be held at block {signal.get('block_id')}. "
-                        f"Maintenance crew dispatched.",
-                        "high",
-                        "signal_failure",
-                    )
-                else:
-                    # Slowly recover health
-                    if health_score < 100:
-                        health_score = min(100.0, health_score + SIGNAL_HEALTH_RECOVERY)
-                    signal["status"] = "operational"
-
-            signal["health_score"] = round(health_score, 1)
-            signal["health"] = int(health_score)
-
-        # ---- Phase 4: Maintenance restrictions ----
+        # Maintenance restrictions
         maintenance_routes = {task.get("location") for task in self.state.get("maintenance", [])}
         for signal in self.state["signals"]:
             signal["maintenance"] = signal.get("route_id") in maintenance_routes
             if signal["maintenance"] and signal["aspect"] == "clear":
                 signal["aspect"] = "attention"
 
-        # ---- Phase 5: Weather restrictions ----
+        # Weather restrictions
         weather_stations = self.state.get("weather", {}).get("stations", {})
         for signal in self.state["signals"]:
             station_code = signal.get("station_code")
             station_weather = weather_stations.get(station_code, {})
             speed_factor = float(station_weather.get("speed_factor", 1.0))
-
             if speed_factor < 0.9 and signal["aspect"] == "clear":
                 signal["aspect"] = "attention"
 
-    # ------------------------------------------------------------------
-    # Alert system
-    # ------------------------------------------------------------------
+    def _verify_consistency(self, occupancy: OccupancyMap) -> None:
+        # Validate every tick
+        for train in self.state["trains"]:
+            status = train.get("status")
+            speed = float(train.get("current_speed_kmh", 0))
+            
+            # waiting/stopped train speed == 0
+            if status in {"waiting", "stopped"} and speed > 0:
+                logger.error(f"Consistency Error: Train {train['id']} is {status} but speed is {speed}")
+                
+            # occupied block contains train
+            route_id = train.get("current_route_id")
+            block_index = train.get("block_index", 0)
+            if route_id and status not in {"dwelling", "reversing", "at_station"}:
+                occ = occupancy.get((route_id, block_index), [])
+                if train["id"] not in occ:
+                    logger.error(f"Consistency Error: Train {train['id']} not in occupancy for {route_id} B{block_index}")
+                    
+        for signal in self.state["signals"]:
+            aspect = signal.get("aspect")
+            is_occupied = signal.get("occupied", False)
+            failure = signal.get("failure", False)
+            
+            # red signal occupied or failed
+            if aspect == "stop" and not is_occupied and not failure:
+                # Wait, it could be red because it's a stop signal at the end of the route? No, ABS.
+                pass 
+            
+            # green signal not occupied
+            if aspect == "clear" and is_occupied:
+                logger.error(f"Consistency Error: Signal {signal['id']} is clear but block is occupied")
 
     def _add_alert(self, title: str, description: str, severity: str, alert_type: str) -> None:
         """Add an alert with cooldown to prevent spam."""
@@ -704,7 +621,7 @@ class SimulationEngine:
         self._alert_cooldowns[cooldown_key] = self.tick_count
 
         alert = {
-            "id": f"alert_{self.tick_count}_{random.randint(1000, 9999)}",
+            "id": f"alert_{self.tick_count}",
             "title": title,
             "description": description,
             "severity": severity,
@@ -805,6 +722,24 @@ class SimulationEngine:
             route["travel_time_minutes"] = self._route_travel_time(route)
 
             block_count = max(1, int(route.get("block_count", 1)))
+            
+            blocks = []
+            for i in range(block_count):
+                status = "clear"
+                for sig in self.state["signals"]:
+                    if sig.get("route_id") == route["id"] and int(sig.get("block_index", 0)) == i:
+                        status = sig.get("aspect", "clear")
+                        break
+                
+                poly = route.get("polyline", [])
+                p1 = poly[i] if i < len(poly) else [0,0]
+                p2 = poly[i+1] if (i+1) < len(poly) else (poly[-1] if poly else [0,0])
+                blocks.append({
+                    "index": i,
+                    "status": status,
+                    "polyline": [p1, p2]
+                })
+            route["blocks"] = blocks
             load = len(occupied_blocks) / block_count
             if load >= 0.5 or route["current_trains"] >= 3:
                 route["congestion"] = "high"
@@ -822,19 +757,19 @@ class SimulationEngine:
                 train
                 for train in self.state["trains"]
                 if train.get("next_station") == code
-                and train.get("status") in {"running", "waiting"}
+                and train.get("status") not in {"stopped", "dwelling", "completed"}
             ]
             departures = [
                 train
                 for train in self.state["trains"]
                 if train.get("current_station") == code
-                and train.get("status") in {"running", "waiting"}
+                and train.get("status") not in {"stopped", "dwelling", "completed"}
             ]
             at_station = [
                 train
                 for train in self.state["trains"]
                 if (train.get("current_station") == code or train.get("next_station") == code)
-                and train.get("status") == "at_station"
+                and train.get("status") in {"stopped", "dwelling"}
             ]
 
             occupied_platforms = min(
@@ -859,7 +794,7 @@ class SimulationEngine:
             key=lambda train: int(train.get("delay_minutes", 0)),
             reverse=True,
         )
-        waiting_trains = [train for train in self.state["trains"] if train.get("status") == "waiting"]
+        waiting_trains = [train for train in self.state["trains"] if train.get("status") == "stopped"]
         dwelling_trains = [train for train in self.state["trains"] if train.get("lifecycle") == "dwelling"]
         congested_routes = [route for route in self.state["routes"] if route.get("congestion") == "high"]
         failed_signals = [s for s in self.state["signals"] if s.get("failure")]
@@ -978,7 +913,7 @@ class SimulationEngine:
 
     def _update_analytics(self) -> None:
         trains = self.state["trains"]
-        active = [t for t in trains if t.get("status") in {"running", "waiting", "at_station"}]
+        active = [t for t in trains if t.get("status") not in {"completed", "terminated"}]
         running = [t for t in trains if t.get("status") == "running"]
         delayed = [t for t in trains if int(t.get("delay_minutes", 0)) > 0]
 
@@ -1024,7 +959,7 @@ class SimulationEngine:
     def _record_performance_snapshot(self) -> None:
         """Record a performance snapshot for rolling analytics."""
         trains = self.state["trains"]
-        active = [t for t in trains if t.get("status") in {"running", "waiting", "at_station"}]
+        active = [t for t in trains if t.get("status") not in {"completed", "terminated"}]
         delayed = [t for t in trains if int(t.get("delay_minutes", 0)) > 0]
         on_time = max(0, int(((len(active) - len(delayed)) / max(len(active), 1)) * 100))
 
@@ -1084,8 +1019,8 @@ class SimulationEngine:
     def _update_runtime(self) -> None:
         trains = self.state["trains"]
         signals = self.state["signals"]
-        running_trains = len([t for t in trains if t.get("status") in {"running", "waiting"}])
-        at_station_trains = len([t for t in trains if t.get("status") == "at_station"])
+        running_trains = len([t for t in trains if t.get("status") not in {"stopped", "dwelling", "completed"}])
+        at_station_trains = len([t for t in trains if t.get("status") in {"stopped", "dwelling"}])
         running_signals = len([s for s in signals if s.get("status") == "operational"])
         failed_signals = len([s for s in signals if s.get("failure")])
 

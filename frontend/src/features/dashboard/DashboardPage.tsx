@@ -69,6 +69,24 @@ function DashboardContent() {
     refetchInterval: 1000,
   });
 
+  const { data: stationsData } = useQuery({
+    queryKey: ["stations"],
+    queryFn: async () => (await api.get("/api/stations")).data.data,
+    refetchInterval: 10000,
+  });
+
+  const { data: routesData } = useQuery({
+    queryKey: ["routes"],
+    queryFn: async () => (await api.get("/api/routes")).data.data,
+    refetchInterval: 10000,
+  });
+
+  const { data: signalsData } = useQuery({
+    queryKey: ["signals"],
+    queryFn: async () => (await api.get("/api/signals")).data.data,
+    refetchInterval: 5000,
+  });
+
   const { data: alertsData } = useQuery({
     queryKey: ["alerts"],
     queryFn: async () => (await api.get("/api/alerts")).data.data,
@@ -81,18 +99,21 @@ function DashboardContent() {
     refetchInterval: 5000,
   });
 
-  const { data: weatherData } = useQuery({
-    queryKey: ["weather"],
-    queryFn: async () => (await api.get("/api/weather")).data.data,
-    refetchInterval: 10000,
+  const { data: analyticsData } = useQuery({
+    queryKey: ["analytics"],
+    queryFn: async () => (await api.get("/api/dashboard/analytics")).data.data,
+    refetchInterval: 5000,
   });
 
   // Safe fallbacks for data
   const stats = statsData || { corridor: "SCR", signal_health: 100, critical_alerts: 0 };
   const trains = trainsData || [];
+  const stations = stationsData || [];
+  const routes = routesData || [];
+  const signals = signalsData || [];
   const alerts = alertsData || [];
   const maintenance = maintenanceData || [];
-  const weather = weatherData || { stations: {}, global_status: "Clear" };
+  const analytics = analyticsData || {};
 
   if (loadingStats && !statsData) {
     return (
@@ -102,13 +123,13 @@ function DashboardContent() {
     );
   }
 
-  const activeTrains = trains.filter((t: any) => t.status === "running" || t.status === "waiting");
-  const stoppedTrains = trains.filter((t: any) => t.status === "at_station");
+  const activeTrains = trains.filter((t: any) => ["running", "approaching", "braking", "departing", "reversing"].includes(t.status));
+  const stoppedTrains = trains.filter((t: any) => ["stopped", "dwelling"].includes(t.status));
   const delayedTrains = trains.filter((t: any) => t.delay_minutes > 0).sort((a: any, b: any) => b.delay_minutes - a.delay_minutes);
-  const cancelledTrains = trains.filter((t: any) => t.status === "cancelled");
+  const cancelledTrains = trains.filter((t: any) => t.status === "completed");
 
-  const speedData = Array.from({ length: 20 }).map(() => ({ val: 60 + Math.random() * 40 }));
-  const delayData = Array.from({ length: 20 }).map(() => ({ val: Math.random() * 15 }));
+  const speedData = analytics.train_performance_7d || [];
+  const delayData = analytics.train_performance_7d || []; 
 
   return (
     <div className="flex flex-col gap-2 h-[calc(100vh-6rem)] overflow-hidden font-mono text-sm bg-bg-base">
@@ -172,7 +193,7 @@ function DashboardContent() {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={speedData}>
                       <YAxis domain={['auto', 'auto']} hide />
-                      <Line type="monotone" dataKey="val" stroke="#3b82f6" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="on_time" stroke="#3b82f6" strokeWidth={1.5} dot={false} isAnimationActive={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -188,7 +209,7 @@ function DashboardContent() {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={delayData}>
                       <YAxis domain={['auto', 'auto']} hide />
-                      <Line type="monotone" dataKey="val" stroke="#f59e0b" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="delayed" stroke="#f59e0b" strokeWidth={1.5} dot={false} isAnimationActive={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -206,15 +227,10 @@ function DashboardContent() {
             </div>
             <div className="flex-1 w-full h-full border border-border-primary rounded overflow-hidden">
               <TrackMap
-                stations={Object.entries(weather?.stations || {}).map(([id, _d]: [string, any]) => ({
-                  id,
-                  name: id,
-                  lat: 17.3850 + (Math.random() - 0.5) * 0.1,
-                  lng: 78.4867 + (Math.random() - 0.5) * 0.1
-                }))}
+                stations={stations}
                 trains={trains}
-                routes={[]}
-                signals={[]}
+                routes={routes}
+                signals={signals}
               />
             </div>
           </div>

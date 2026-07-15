@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Building2, Zap, Search, Hash, Type, Layers, Map, Activity, ShieldCheck, Inbox } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
+import FilterBar, { FilterConfig } from "../../components/shared/FilterBar";
 
 interface Station {
   id: string;
@@ -20,18 +21,51 @@ interface Station {
 }
 
 export default function StationsPage() {
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
   const { data: stationsData, isLoading } = useQuery({
     queryKey: ["stations"],
     queryFn: async () => (await api.get("/api/stations")).data.data,
     refetchInterval: 10000,
   });
 
-  const stations = stationsData || [];
+  const stations: Station[] = stationsData || [];
 
-  const filteredStations = stations.filter(s => 
-    s.name.toLowerCase().includes(search.toLowerCase()) || 
-    s.code.toLowerCase().includes(search.toLowerCase())
-  );
+  const filterConfigs: FilterConfig[] = [
+    { id: "search", label: "Station", type: "search", placeholder: "Search Code or Name" },
+    { id: "division", label: "Division", type: "select", options: [
+      { label: "Secunderabad (SC)", value: "SC" },
+      { label: "Hyderabad (HYB)", value: "HYB" },
+      { label: "Vijayawada (BZA)", value: "BZA" },
+      { label: "Guntur (GNT)", value: "GNT" },
+      { label: "Guntakal (GTL)", value: "GTL" },
+      { label: "Nanded (NED)", value: "NED" },
+    ]},
+    { id: "zone", label: "Zone", type: "select", options: [
+      { label: "SCR", value: "SCR" }
+    ]},
+    { id: "platforms", label: "Platforms", type: "select", options: [
+      { label: "Major (>=6)", value: "major" },
+      { label: "Minor (<6)", value: "minor" }
+    ]},
+    { id: "status", label: "Status", type: "select", options: [
+      { label: "Operational", value: "operational" },
+      { label: "Maintenance", value: "maintenance" },
+      { label: "Closed", value: "closed" },
+    ]}
+  ];
+
+  const filteredStations = stations.filter((s: Station) => {
+    if (filters.search && !(s.name || "").toLowerCase().includes(filters.search.toLowerCase()) && !(s.code || "").toLowerCase().includes(filters.search.toLowerCase())) return false;
+    if (filters.division && s.division !== filters.division) return false;
+    if (filters.status && s.status !== filters.status) return false;
+    if (filters.zone && s.zone !== filters.zone) return false;
+    if (filters.platforms) {
+       if (filters.platforms === 'major' && (s.platforms || 0) < 6) return false;
+       if (filters.platforms === 'minor' && (s.platforms || 0) >= 6) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -40,17 +74,9 @@ export default function StationsPage() {
           <h1 className="text-2xl font-semibold text-text-primary">Stations</h1>
           <p className="mt-1 text-sm text-text-secondary">Secunderabad–Kazipet–Vijayawada corridor</p>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-          <input
-            type="text"
-            placeholder="Search stations..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full sm:w-64 rounded-lg border border-border-primary bg-bg-elevated/50 py-2 pl-9 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent backdrop-blur-sm transition-all"
-          />
-        </div>
       </div>
+
+      <FilterBar configs={filterConfigs} onFilterChange={setFilters} />
 
       {isLoading && !stationsData ? (
         <div className="flex justify-center p-12">
@@ -117,10 +143,10 @@ export default function StationsPage() {
                         <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10">
                           <div 
                             className="h-full rounded-full bg-accent" 
-                            style={{ width: `${station.occupancy || Math.floor(Math.random() * 60 + 20)}%` }}
+                            style={{ width: `${station.occupancy ?? 0}%` }}
                           />
                         </div>
-                        <span className="font-mono text-xs text-text-secondary">{station.occupancy || Math.floor(Math.random() * 60 + 20)}%</span>
+                        <span className="font-mono text-xs text-text-secondary">{station.occupancy ?? 0}%</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">

@@ -31,16 +31,16 @@ export default function SystemStatusPage() {
 
   const status = {
     ...baseData,
-    cpu_usage: Math.floor(Math.random() * 40) + 10,
-    memory_usage: Math.floor(Math.random() * 30) + 40,
-    api_latency: Math.floor(Math.random() * 15) + 5,
-    version: "v2.0.4-rc1",
+    cpu_usage: baseData.cpu_usage_percent ?? 12,
+    memory_usage: baseData.memory_usage_percent ?? 45,
+    api_latency: baseData.api_latency_ms ?? 24,
+    version: baseData.version ?? "v2.0.4-rc1",
     docker_status: "running",
-    last_tick: new Date().toISOString(),
-    uptime: baseData.data?.[0]?.uptime || "99.99%",
+    last_tick: baseData.last_tick ?? new Date().toISOString(),
+    uptime: baseData.uptime ?? "99.99%",
   };
 
-  const components = status.data || [];
+  const components = [...(status.components || [])];
   const ensureComponent = (name: string, compStatus: string, uptime: string) => {
     if (!components.find((c: any) => c.name.includes(name))) {
       components.push({ name, status: compStatus, uptime });
@@ -50,7 +50,7 @@ export default function SystemStatusPage() {
   ensureComponent("Backend API", "operational", "14d 2h");
   ensureComponent("PostgreSQL Database", "operational", "30d 5h");
   ensureComponent("Simulation Engine", "operational", "14d 2h");
-  status.data = components;
+  status.components = components;
 
   return (
     <div className="flex flex-col gap-2 h-[calc(100vh-6rem)] overflow-hidden font-mono text-sm bg-bg-base">
@@ -130,7 +130,7 @@ export default function SystemStatusPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-primary">
-                {status.data.map((comp: any, i: number) => {
+                {(status.components || []).map((comp: any, i: number) => {
                   const Icon = getIcon(comp.name);
                   const isOk = comp.status === 'operational';
                   return (

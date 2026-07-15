@@ -1,13 +1,15 @@
+import { useState } from "react";
 import { Route as RouteIcon, Zap, Gauge, Hash, Map, Train, Activity, ShieldCheck, Inbox } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
+import FilterBar, { FilterConfig } from "../../components/shared/FilterBar";
 
 interface RouteData {
   id: string;
   name: string;
   code: string;
   corridor: string;
-  total_distance_km: number;
+  distance_km: number;
   stations_count: number;
   track_type: string;
   electrified: boolean;
@@ -18,6 +20,8 @@ interface RouteData {
 }
 
 export default function RoutesPage() {
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
   const { data: routesData, isLoading } = useQuery({
     queryKey: ["routes"],
     queryFn: async () => (await api.get("/api/routes")).data.data,
@@ -26,12 +30,47 @@ export default function RoutesPage() {
 
   const routes = routesData || [];
 
+  const filterConfigs: FilterConfig[] = [
+    { id: "search", label: "Route", type: "search", placeholder: "Search Code or Name" },
+    { id: "corridor", label: "Corridor", type: "select", options: [
+      { label: "Mainline", value: "Mainline" },
+      { label: "Branch", value: "Branch" },
+      { label: "Freight", value: "Freight" },
+    ]},
+    { id: "congestion", label: "Congestion", type: "select", options: [
+      { label: "Low", value: "low" },
+      { label: "Medium", value: "medium" },
+      { label: "High", value: "high" },
+    ]},
+    { id: "distance", label: "Distance", type: "select", options: [
+      { label: "< 50 km", value: "short" },
+      { label: "50 - 100 km", value: "medium" },
+      { label: "> 100 km", value: "long" },
+    ]},
+    { id: "electrified", label: "Electrified Only", type: "boolean" }
+  ];
+
+  const filteredRoutes = routes.filter((r: RouteData) => {
+    if (filters.search && !(r.name || "").toLowerCase().includes(filters.search.toLowerCase()) && !(r.code || "").toLowerCase().includes(filters.search.toLowerCase())) return false;
+    if (filters.corridor && r.corridor !== filters.corridor) return false;
+    if (filters.congestion && (r.congestion || "low") !== filters.congestion) return false;
+    if (filters.electrified && !r.electrified) return false;
+    if (filters.distance) {
+      if (filters.distance === 'short' && r.distance_km >= 50) return false;
+      if (filters.distance === 'medium' && (r.distance_km < 50 || r.distance_km > 100)) return false;
+      if (filters.distance === 'long' && r.distance_km <= 100) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-text-primary">Routes</h1>
         <p className="mt-1 text-sm text-text-secondary">Railway corridor routes and sections</p>
       </div>
+
+      <FilterBar configs={filterConfigs} onFilterChange={setFilters} />
 
       {isLoading && !routesData ? (
         <div className="flex justify-center p-12">
@@ -64,7 +103,7 @@ export default function RoutesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {routes.length === 0 ? (
+              {filteredRoutes.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-text-muted">
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -74,10 +113,9 @@ export default function RoutesPage() {
                   </td>
                 </tr>
               ) : (
-                routes.map((route) => {
-                  const congestionLevels = ["Low", "Medium", "High", "Critical"];
-                  const congestion = route.congestion || congestionLevels[Math.floor(Math.random() * congestionLevels.length)];
-                  const trainsCount = route.current_trains || Math.floor(Math.random() * 15 + 2);
+                filteredRoutes.map((route: RouteData) => {
+                  const congestion = route.congestion ?? "low";
+                  const trainsCount = route.current_trains ?? 0;
                   
                   return (
                     <tr key={route.id} className="group transition-colors hover:bg-white/5">
@@ -88,7 +126,7 @@ export default function RoutesPage() {
                           </div>
                           <div>
                             <div className="font-medium text-text-primary flex items-center gap-2">
-                              {route.name}
+                              {route.name || route.code}
                               {route.electrified && <Zap className="h-3 w-3 text-status-warning" />}
                             </div>
                             <div className="font-mono text-xs text-text-muted mt-0.5">{route.code}</div>
@@ -96,8 +134,8 @@ export default function RoutesPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-mono text-text-secondary">{route.total_distance_km.toFixed(1)} km</div>
-                        <div className="text-[10px] text-text-muted mt-0.5">{route.stations_count} stations</div>
+                        <div className="font-mono text-text-secondary">{(route.distance_km || 0).toFixed(1)} km</div>
+                        <div className="text-[10px] text-text-muted mt-0.5">{route.stations_count || 0} stations</div>
                       </td>
                       <td className="px-4 py-3">
                         <span className="rounded bg-white/5 px-2 py-1 font-mono text-xs text-text-secondary border border-white/10">{route.max_speed_kmh} km/h</span>

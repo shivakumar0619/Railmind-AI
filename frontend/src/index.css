@@ -240,30 +240,7 @@ body {
   opacity: 0.6;
 }
 
-/* ── Signal Pulse Animations ── */
-@keyframes signal-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
 
-.signal-pulse {
-  animation: signal-pulse 2s ease-in-out infinite;
-}
-
-/* ── Train Movement Animation ── */
-@keyframes train-move {
-  from {
-    offset-distance: 0%;
-  }
-  to {
-    offset-distance: 100%;
-  }
-}
 
 /* ── Skeleton Loading ── */
 @keyframes skeleton-shimmer {

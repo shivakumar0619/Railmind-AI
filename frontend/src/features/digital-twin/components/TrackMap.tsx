@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import Map, { NavigationControl, FullscreenControl, Marker, Source, Layer, LayerProps } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { TrainIcon } from "../../../components/icons/TrainIcons";
 
 interface TrackMapProps {
   stations: any[];
@@ -10,26 +11,28 @@ interface TrackMapProps {
 }
 
 export default function TrackMap({ stations, routes, signals, trains }: TrackMapProps) {
-  // Compute GeoJSON for routes with accurate curved polylines
+  // Compute GeoJSON for routes with accurate curved polylines sliced by blocks
   const routesGeoJSON = useMemo(() => {
-    const features = routes.map((route) => {
-      // The backend now generates 'polyline' as [[lng, lat], [lng, lat], ...]
-      const coords = route.polyline || [];
-      return {
-        type: "Feature",
-        properties: {
-          id: route.id,
-          source_code: route.source_code,
-          target_code: route.target_code,
-          corridor: route.corridor || "Branch",
-          congestion: route.congestion || "low"
-        },
-        geometry: {
-          type: "LineString",
-          coordinates: coords,
-        },
-      };
-    }).filter(f => f.geometry.coordinates.length > 0);
+    const features: any[] = [];
+    routes.forEach((route) => {
+      const blocks = route.blocks || [];
+      blocks.forEach((block: any) => {
+        if (block.polyline && block.polyline.length > 0) {
+          features.push({
+            type: "Feature",
+            properties: {
+              id: `${route.id}-B${block.index}`,
+              corridor: route.corridor || "Branch",
+              status: block.status || "clear"
+            },
+            geometry: {
+              type: "LineString",
+              coordinates: block.polyline
+            }
+          });
+        }
+      });
+    });
 
     return {
       type: "FeatureCollection",
@@ -51,16 +54,19 @@ export default function TrackMap({ stations, routes, signals, trains }: TrackMap
     };
   }, [stations]);
 
-  // Track styling based on congestion/status
+  // Track styling based on ABS block status
   const trackLayer: LayerProps = {
     id: "routes-line",
     type: "line",
     paint: {
       "line-color": [
         "match",
-        ["get", "congestion"],
-        "high", "#ef4444",
-        "medium", "#f59e0b",
+        ["get", "status"],
+        "stop", "#ef4444",
+        "failed", "#ef4444",
+        "caution", "#f97316",
+        "attention", "#eab308",
+        "clear", "#22c55e",
         "#4b5563"
       ],
       "line-width": ["match", ["get", "corridor"], "Mainline", 4, 2],
@@ -153,13 +159,13 @@ export default function TrackMap({ stations, routes, signals, trains }: TrackMap
         })}
 
         {/* Trains */}
-        {trains.filter((t) => t.status === "running" || t.status === "waiting" || t.status === "at_station").map((train) => {
+        {trains.filter((t) => ["running", "approaching", "braking", "stopped", "departing", "dwelling", "reversing"].includes(t.status)).map((train) => {
           // Fallback if simulation engine hasn't populated coordinates yet
           if (train.lng === undefined || train.lat === undefined) return null;
 
           const bearing = train.bearing || 0;
           const isDelayed = train.delay_minutes > 5;
-          const color = train.status === 'at_station' ? '#3b82f6' : (isDelayed ? '#f59e0b' : '#22c55e');
+          const color = train.status === 'dwelling' ? '#3b82f6' : (isDelayed ? '#f59e0b' : '#22c55e');
 
           return (
             <Marker
@@ -167,23 +173,18 @@ export default function TrackMap({ stations, routes, signals, trains }: TrackMap
               longitude={train.lng}
               latitude={train.lat}
               anchor="center"
-              style={{ zIndex: 30 }}
+              style={{ zIndex: 60 }}
             >
               <div className="relative group cursor-pointer flex flex-col items-center">
-                {/* Train Icon / Direction Indicator */}
-                <div 
-                  className="w-5 h-5 rounded border-2 shadow-lg relative z-30 flex items-center justify-center transition-colors"
-                  style={{ 
-                    backgroundColor: '#18181b', 
-                    borderColor: color,
-                    transform: `rotate(${bearing}deg)` 
-                  }}
-                >
-                  <div className="w-0 h-0 border-l-[3px] border-r-[3px] border-b-[5px] border-l-transparent border-r-transparent border-b-white" style={{ backgroundColor: color }} />
-                </div>
+                <TrainIcon 
+                  category={train.icon_type || train.type || train.name?.split(" ").pop()?.toLowerCase() || 'default'} 
+                  color={color} 
+                  bearing={bearing} 
+                  className="z-30" 
+                />
                 
                 {/* Label */}
-                <div className="absolute top-6 bg-[#18181b]/90 text-white text-[9px] font-bold px-1 rounded shadow-sm whitespace-nowrap z-20 border border-border-primary">
+                <div className="absolute top-6 bg-[#18181b]/90 text-white text-[9px] font-bold px-1 rounded shadow-sm whitespace-nowrap z-[35] border border-border-primary">
                   {train.number}
                 </div>
                 

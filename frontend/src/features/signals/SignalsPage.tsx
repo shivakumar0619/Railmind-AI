@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CircleDot, AlertTriangle, Wrench, CheckCircle2, Filter, Hash, Type, HeartPulse, Square, ShieldCheck, Inbox, Activity } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
+import FilterBar, { FilterConfig } from "../../components/shared/FilterBar";
 
 interface SignalData {
   id: string;
@@ -24,15 +25,44 @@ const ASPECT_COLORS: Record<string, string> = {
 };
 
 export default function SignalsPage() {
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
   const { data: signalsData, isLoading } = useQuery({
     queryKey: ["signals"],
     queryFn: async () => (await api.get("/api/signals")).data.data,
     refetchInterval: 5000,
   });
 
-  const signals = signalsData || [];
+  const signals: SignalData[] = signalsData || [];
 
-  const filteredSignals = filterAspect === "all" ? signals : signals.filter((s: SignalData) => s.aspect.toLowerCase() === filterAspect);
+  const filterConfigs: FilterConfig[] = [
+    { id: "search", label: "Signal ID", type: "search", placeholder: "Search ID or Route" },
+    { id: "aspect", label: "Aspect", type: "select", options: [
+      { label: "Green (Clear)", value: "clear" },
+      { label: "Double Yellow (Attention)", value: "attention" },
+      { label: "Yellow (Caution)", value: "caution" },
+      { label: "Red (Stop)", value: "stop" },
+      { label: "Failed", value: "failed" },
+    ]},
+    { id: "occupied", label: "Occupied Blocks", type: "boolean" },
+    { id: "health", label: "Health", type: "select", options: [
+      { label: "Critical (<80)", value: "critical" },
+      { label: "Healthy (>=80)", value: "healthy" }
+    ]},
+    { id: "failed", label: "Maintenance/Failed Only", type: "boolean" }
+  ];
+
+  const filteredSignals = signals.filter((s: SignalData) => {
+    if (filters.search && !(s.id || "").toLowerCase().includes(filters.search.toLowerCase()) && !(s.route_id || "").toLowerCase().includes(filters.search.toLowerCase())) return false;
+    if (filters.aspect && s.aspect !== filters.aspect) return false;
+    if (filters.failed && !s.failure && !s.maintenance) return false;
+    if (filters.occupied && !s.occupied) return false;
+    if (filters.health) {
+      if (filters.health === 'critical' && (s.health_score || 100) >= 80) return false;
+      if (filters.health === 'healthy' && (s.health_score || 100) < 80) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -41,21 +71,9 @@ export default function SignalsPage() {
           <h1 className="text-2xl font-semibold text-text-primary">Signals</h1>
           <p className="mt-1 text-sm text-text-secondary">Signal monitoring and health status</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-text-muted" />
-          <select
-            value={filterAspect}
-            onChange={e => setFilterAspect(e.target.value)}
-            className="rounded-lg border border-border-primary bg-bg-elevated/50 py-1.5 pl-3 pr-8 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent backdrop-blur-sm transition-all"
-          >
-            <option value="all">All Aspects</option>
-            <option value="clear">Clear</option>
-            <option value="caution">Caution</option>
-            <option value="attention">Attention</option>
-            <option value="stop">Stop</option>
-          </select>
-        </div>
       </div>
+
+      <FilterBar configs={filterConfigs} onFilterChange={setFilters} />
 
       {isLoading && !signalsData ? (
         <div className="flex justify-center p-12">
@@ -99,7 +117,7 @@ export default function SignalsPage() {
                 </tr>
               ) : (
                 filteredSignals.map((signal) => {
-                  const health = signal.health || Math.floor(Math.random() * 40 + 60); // Mock if undefined
+                  const health = signal.health ?? signal.health_score ?? 100;
                   const blockSection = signal.block || `${signal.station_code}-BLK-${signal.id.slice(-2)}`;
                   return (
                     <tr key={signal.id} className="group transition-colors hover:bg-white/5">
